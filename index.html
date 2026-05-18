@@ -7,1166 +7,1230 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #1a1a24;
-    --surface3: #22222f;
-    --border: #2a2a3a;
-    --accent: #e8ff47;
-    --accent2: #ff6b35;
-    --accent3: #4dc4ff;
-    --text: #f0f0f8;
-    --text2: #8888aa;
-    --text3: #555570;
-    --green: #4fffb0;
-    --red: #ff4f6a;
-    --yellow: #ffcc00;
-    --radius: 12px;
-    --radius-sm: 6px;
-    --font-display: 'Bebas Neue', sans-serif;
-    --font-mono: 'DM Mono', monospace;
-    --font-body: 'DM Sans', sans-serif;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ===== SCROLLBAR ===== */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  /* ===== SCREENS ===== */
-  .screen { display: none; min-height: 100vh; }
-  .screen.active { display: flex; flex-direction: column; }
-
-  /* ===== LANDING ===== */
-  #screen-landing {
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(ellipse at 20% 50%, #1a1a2e 0%, var(--bg) 60%),
-                radial-gradient(ellipse at 80% 20%, #0f1a2e 0%, transparent 50%);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .landing-grid {
-    position: absolute;
-    inset: 0;
-    background-image: 
-      linear-gradient(var(--border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border) 1px, transparent 1px);
-    background-size: 60px 60px;
-    opacity: 0.3;
-    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
-  }
-
-  .landing-content {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    max-width: 600px;
-    padding: 40px 24px;
-    animation: fadeUp 0.8s ease both;
-  }
-
-  .logo-mark {
-    width: 64px;
-    height: 64px;
-    background: var(--accent);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 24px;
-    font-family: var(--font-display);
-    font-size: 28px;
-    color: var(--bg);
-    box-shadow: 0 0 40px rgba(232,255,71,0.3);
-  }
-
-  .landing-title {
-    font-family: var(--font-display);
-    font-size: clamp(56px, 10vw, 96px);
-    letter-spacing: 4px;
-    line-height: 0.9;
-    margin-bottom: 16px;
-    background: linear-gradient(135deg, var(--text) 0%, var(--text2) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .landing-sub {
-    color: var(--text2);
-    font-size: 16px;
-    font-weight: 300;
-    margin-bottom: 48px;
-    letter-spacing: 0.5px;
-  }
-
-  .landing-btns {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  /* ===== BUTTONS ===== */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border-radius: var(--radius-sm);
-    font-family: var(--font-body);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: var(--bg);
-  }
-  .btn-primary:hover { background: #d4eb3a; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,255,71,0.25); }
-
-  .btn-secondary {
-    background: var(--surface2);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-  .btn-secondary:hover { background: var(--surface3); border-color: var(--text3); }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--text2);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost:hover { color: var(--text); border-color: var(--text3); }
-
-  .btn-danger { background: var(--red); color: white; }
-  .btn-danger:hover { background: #e03050; transform: translateY(-1px); }
-
-  .btn-success { background: var(--green); color: var(--bg); }
-  .btn-success:hover { background: #3de89a; }
-
-  .btn-sm { padding: 7px 14px; font-size: 12px; }
-  .btn-lg { padding: 16px 32px; font-size: 16px; }
-  .btn-icon { padding: 8px; width: 36px; height: 36px; justify-content: center; }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
-
-  /* ===== AUTH ===== */
-  #screen-auth {
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-  }
-
-  .auth-card {
-    width: 100%;
-    max-width: 420px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 40px;
-    animation: fadeUp 0.5s ease both;
-  }
-
-  .auth-logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 32px;
-  }
-
-  .auth-logo-mark {
-    width: 40px;
-    height: 40px;
-    background: var(--accent);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-display);
-    font-size: 18px;
-    color: var(--bg);
-  }
-
-  .auth-logo-text {
-    font-family: var(--font-display);
-    font-size: 28px;
-    letter-spacing: 2px;
-    color: var(--text);
-  }
-
-  .auth-title {
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-
-  .auth-subtitle {
-    color: var(--text2);
-    font-size: 14px;
-    margin-bottom: 28px;
-  }
-
-  .auth-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 28px;
-    gap: 4px;
-  }
-
-  .auth-tab {
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text2);
-    cursor: pointer;
-    border: none;
-    background: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    transition: all 0.2s;
-    font-family: var(--font-body);
-  }
-
-  .auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  /* ===== FORM ===== */
-  .form-group { margin-bottom: 16px; }
-
-  .form-label {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text2);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .form-input {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 11px 14px;
-    font-size: 14px;
-    color: var(--text);
-    font-family: var(--font-body);
-    transition: border-color 0.2s;
-    outline: none;
-  }
-
-  .form-input:focus { border-color: var(--accent); }
-  .form-input::placeholder { color: var(--text3); }
-
-  textarea.form-input { resize: vertical; min-height: 80px; }
-  select.form-input { cursor: pointer; }
-
-  .form-error {
-    font-size: 12px;
-    color: var(--red);
-    margin-top: 6px;
-  }
-
-  /* ===== APP LAYOUT ===== */
-  #screen-app {
-    flex-direction: row;
-    min-height: 100vh;
-  }
-
-  .sidebar {
-    width: 240px;
-    min-width: 240px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    height: 100vh;
-    position: sticky;
-    top: 0;
-  }
-
-  .sidebar-header {
-    padding: 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .sidebar-logo-mark {
-    width: 32px;
-    height: 32px;
-    background: var(--accent);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-display);
-    font-size: 15px;
-    color: var(--bg);
-    flex-shrink: 0;
-  }
-
-  .sidebar-logo-text {
-    font-family: var(--font-display);
-    font-size: 22px;
-    letter-spacing: 2px;
-  }
-
-  .sidebar-nav {
-    flex: 1;
-    padding: 12px;
-    overflow-y: auto;
-  }
-
-  .sidebar-section-label {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text3);
-    padding: 12px 8px 6px;
-  }
-
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 12px;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text2);
-    cursor: pointer;
-    transition: all 0.15s;
-    text-decoration: none;
-    border: none;
-    background: none;
-    width: 100%;
-    text-align: left;
-  }
-
-  .nav-item:hover { background: var(--surface2); color: var(--text); }
-  .nav-item.active { background: rgba(232,255,71,0.1); color: var(--accent); }
-  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
-
-  .sidebar-footer {
-    padding: 16px;
-    border-top: 1px solid var(--border);
-  }
-
-  .user-chip {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    background: var(--surface2);
-    border-radius: var(--radius-sm);
-    margin-bottom: 8px;
-  }
-
-  .user-avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--bg);
-    flex-shrink: 0;
-  }
-
-  .user-info { flex: 1; min-width: 0; }
-  .user-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .user-email { font-size: 10px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-  /* ===== MAIN CONTENT ===== */
-  .main-content {
-    flex: 1;
-    overflow-y: auto;
-    background: var(--bg);
-  }
-
-  .page { display: none; padding: 32px; max-width: 1100px; }
-  .page.active { display: block; }
-
-  .page-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 32px;
-    gap: 16px;
-  }
-
-  .page-title {
-    font-family: var(--font-display);
-    font-size: 40px;
-    letter-spacing: 2px;
-    line-height: 1;
-  }
-
-  .page-sub {
-    font-size: 14px;
-    color: var(--text2);
-    margin-top: 4px;
-  }
-
-  /* ===== CARDS ===== */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-  }
-
-  .card-title {
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text2);
-    margin-bottom: 16px;
-  }
-
-  /* ===== SESSIONS GRID ===== */
-  .sessions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 16px;
-  }
-
-  .session-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .session-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--accent);
-    transform: scaleX(0);
-    transition: transform 0.2s;
-    transform-origin: left;
-  }
-
-  .session-card:hover { border-color: var(--text3); transform: translateY(-2px); }
-  .session-card:hover::before { transform: scaleX(1); }
-
-  .session-card-name {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-
-  .session-card-desc {
-    font-size: 13px;
-    color: var(--text2);
-    margin-bottom: 16px;
-    line-height: 1.4;
-  }
-
-  .session-card-meta {
-    display: flex;
-    gap: 12px;
-    font-size: 11px;
-    color: var(--text3);
-  }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 500;
-  }
-
-  .badge-green { background: rgba(79,255,176,0.15); color: var(--green); }
-  .badge-yellow { background: rgba(255,204,0,0.15); color: var(--yellow); }
-  .badge-red { background: rgba(255,79,106,0.15); color: var(--red); }
-  .badge-blue { background: rgba(77,196,255,0.15); color: var(--accent3); }
-  .badge-gray { background: var(--surface2); color: var(--text2); }
-
-  /* ===== SESSION DETAIL ===== */
-  .session-detail-header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 20px 32px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-
-  .session-detail-title { font-size: 20px; font-weight: 600; }
-  .session-detail-meta { font-size: 13px; color: var(--text2); }
-
-  /* ===== TIMERS LIST ===== */
-  .timers-list { display: flex; flex-direction: column; gap: 12px; }
-
-  .timer-row {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    transition: all 0.2s;
-  }
-
-  .timer-row:hover { border-color: var(--text3); }
-  .timer-row.active-timer { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); }
-  .timer-row.paused-timer { border-color: var(--yellow); }
-
-  .timer-drag-handle {
-    color: var(--text3);
-    cursor: grab;
-    font-size: 18px;
-    user-select: none;
-  }
-
-  .timer-order {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text3);
-    width: 20px;
-    text-align: center;
-    flex-shrink: 0;
-  }
-
-  .timer-info { flex: 1; min-width: 0; }
-  .timer-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
-  .timer-speaker { font-size: 12px; color: var(--text2); }
-
-  .timer-duration {
-    font-family: var(--font-mono);
-    font-size: 24px;
-    font-weight: 500;
-    color: var(--accent);
-    letter-spacing: 1px;
-    flex-shrink: 0;
-  }
-
-  .timer-duration.warning { color: var(--yellow); }
-  .timer-duration.danger { color: var(--red); animation: blink 0.5s ease infinite alternate; }
-
-  .timer-actions { display: flex; gap: 6px; flex-shrink: 0; }
-
-  /* ===== STAGER VIEW ===== */
-  #screen-stager {
-    background: #000;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-  }
-
-  .stager-wrapper {
-    width: 100%;
-    max-width: 900px;
-    padding: 40px 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 32px;
-  }
-
-  .stager-header {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .stager-session-name {
-    font-family: var(--font-display);
-    font-size: 24px;
-    letter-spacing: 2px;
-    color: rgba(255,255,255,0.4);
-  }
-
-  .stager-device-name {
-    font-size: 12px;
-    color: rgba(255,255,255,0.2);
-    font-family: var(--font-mono);
-  }
-
-  .stager-main-timer {
-    text-align: center;
-    width: 100%;
-  }
-
-  .stager-speaker-name {
-    font-size: 18px;
-    color: rgba(255,255,255,0.5);
-    margin-bottom: 8px;
-    font-weight: 300;
-    letter-spacing: 1px;
-  }
-
-  .stager-timer-label {
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: rgba(255,255,255,0.3);
-    margin-bottom: 16px;
-  }
-
-  .stager-time {
-    font-family: var(--font-mono);
-    font-size: clamp(80px, 18vw, 180px);
-    font-weight: 300;
-    line-height: 1;
-    letter-spacing: -2px;
-    transition: color 0.5s;
-    color: #fff;
-  }
-
-  .stager-time.warning { color: #ffcc00; }
-  .stager-time.danger { color: #ff4f6a; }
-  .stager-time.finished { color: #ff4f6a; animation: blink 0.4s ease infinite alternate; }
-
-  .stager-timer-name {
-    font-family: var(--font-display);
-    font-size: 28px;
-    letter-spacing: 2px;
-    margin-top: 12px;
-    color: rgba(255,255,255,0.7);
-  }
-
-  .stager-bottom {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-
-  .stager-panel {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: var(--radius);
-    padding: 20px;
-  }
-
-  .stager-panel-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: rgba(255,255,255,0.25);
-    margin-bottom: 10px;
-  }
-
-  .stager-next-name {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-
-  .stager-next-time {
-    font-family: var(--font-mono);
-    font-size: 32px;
-    color: rgba(255,255,255,0.4);
-  }
-
-  .stager-messages { display: flex; flex-direction: column; gap: 8px; max-height: 120px; overflow-y: auto; }
-
-  .stager-message {
-    background: rgba(232,255,71,0.1);
-    border-left: 2px solid var(--accent);
-    padding: 8px 12px;
-    border-radius: 0 6px 6px 0;
-    font-size: 13px;
-    color: rgba(255,255,255,0.8);
-    animation: fadeUp 0.3s ease both;
-  }
-
-  .stager-no-timer {
-    text-align: center;
-    font-family: var(--font-mono);
-    color: rgba(255,255,255,0.15);
-    font-size: 18px;
-  }
-
-  .stager-progress {
-    width: 100%;
-    height: 4px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 20px;
-  }
-
-  .stager-progress-bar {
-    height: 100%;
-    background: var(--green);
-    border-radius: 2px;
-    transition: width 1s linear, background 0.5s;
-  }
-
-  /* ===== DEVICES ===== */
-  .devices-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-  }
-
-  .device-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .device-card:hover { border-color: var(--text3); transform: translateY(-2px); }
-  .device-card.active-device { border-color: var(--green); }
-
-  .device-icon { font-size: 32px; margin-bottom: 10px; }
-  .device-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-  .device-role { font-size: 11px; color: var(--text2); }
-
-  /* ===== MODAL ===== */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
-    z-index: 1000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-
-  .modal-overlay.active { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 32px;
-    width: 100%;
-    max-width: 500px;
-    animation: scaleIn 0.2s ease both;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
-  .modal-title {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 24px;
-  }
-
-  .modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 28px;
-  }
-
-  /* ===== MESSAGE SENDER ===== */
-  .message-form {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-
-  /* ===== STATS ROW ===== */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 12px;
-    margin-bottom: 28px;
-  }
-
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 16px;
-  }
-
-  .stat-value {
-    font-family: var(--font-mono);
-    font-size: 28px;
-    font-weight: 500;
-    color: var(--accent);
-  }
-
-  .stat-label {
-    font-size: 11px;
-    color: var(--text2);
-    margin-top: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  /* ===== TOAST ===== */
-  .toast-container {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .toast {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    font-size: 13px;
-    min-width: 240px;
-    max-width: 360px;
-    animation: toastIn 0.3s ease both;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .toast.success { border-left: 3px solid var(--green); }
-  .toast.error { border-left: 3px solid var(--red); }
-  .toast.info { border-left: 3px solid var(--accent3); }
-
-  /* ===== LOADING ===== */
-  .loader {
-    width: 20px;
-    height: 20px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    display: inline-block;
-  }
-
-  .loading-overlay {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    z-index: 9998;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .loading-overlay.hidden { display: none; }
-
-  /* ===== DIVIDER ===== */
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 20px 0;
-  }
-
-  /* ===== EMPTY STATE ===== */
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text3);
-  }
-
-  .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
-  .empty-state-text { font-size: 15px; margin-bottom: 8px; color: var(--text2); }
-  .empty-state-sub { font-size: 13px; }
-
-  /* ===== TIMER DETAIL ===== */
-  .timer-detail-view { max-width: 700px; }
-
-  /* ===== STAGER SELECT ===== */
-  .stager-select-screen {
-    min-height: 100vh;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
-  }
-
-  .role-select-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 28px;
-  }
-
-  .role-card {
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    padding: 32px 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .role-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
-
-  .role-icon { font-size: 48px; margin-bottom: 16px; }
-  .role-name { font-family: var(--font-display); font-size: 32px; letter-spacing: 2px; margin-bottom: 8px; }
-  .role-desc { font-size: 13px; color: var(--text2); }
-
-  /* ===== SESSION RUNNER ===== */
-  .runner-layout {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 0;
-    height: 100vh;
-    overflow: hidden;
-  }
-
-  .runner-main {
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    padding: 24px;
-  }
-
-  .runner-sidebar {
-    background: var(--surface);
-    border-left: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .runner-sidebar-header {
-    padding: 16px;
-    border-bottom: 1px solid var(--border);
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text2);
-  }
-
-  .runner-timer-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-  }
-
-  .runner-timer-item {
-    padding: 12px;
-    border-radius: var(--radius-sm);
-    margin-bottom: 6px;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-
-  .runner-timer-item:hover { border-color: var(--text3); }
-  .runner-timer-item.current { border-color: var(--green); background: rgba(79,255,176,0.05); }
-  .runner-timer-item.done { opacity: 0.4; }
-
-  .runner-timer-item-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
-  .runner-timer-item-dur { font-size: 11px; color: var(--text3); font-family: var(--font-mono); }
-
-  .runner-controls {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
-
-  /* ===== SEND MESSAGE AREA ===== */
-  .msg-area {
-    padding: 16px;
-    border-top: 1px solid var(--border);
-  }
-
-  .msg-device-tabs {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
-  }
-
-  .msg-device-tab {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text2);
-    font-family: var(--font-body);
-    transition: all 0.15s;
-  }
-
-  .msg-device-tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
-
-  /* ===== ANIMATIONS ===== */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  @keyframes blink {
-    from { opacity: 1; }
-    to { opacity: 0.2; }
-  }
-
-  @keyframes toastIn {
-    from { opacity: 0; transform: translateX(20px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  /* ===== FLEX UTILITIES ===== */
-  .flex { display: flex; }
-  .flex-col { flex-direction: column; }
-  .items-center { align-items: center; }
-  .justify-between { justify-content: space-between; }
-  .gap-8 { gap: 8px; }
-  .gap-12 { gap: 12px; }
-  .gap-16 { gap: 16px; }
-  .mt-16 { margin-top: 16px; }
-  .mt-24 { margin-top: 24px; }
-  .mb-16 { margin-bottom: 16px; }
-  .mb-24 { margin-bottom: 24px; }
-  .text-sm { font-size: 13px; }
-  .text-xs { font-size: 11px; }
-  .text-muted { color: var(--text2); }
-  .font-mono { font-family: var(--font-mono); }
-  .w-full { width: 100%; }
-
-  /* ===== COLOR DOT ===== */
-  .color-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
-  .dot-red { background: var(--red); }
-  .dot-yellow { background: var(--yellow); }
-  .dot-gray { background: var(--text3); }
-
-  /* live dot */
-  .live-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--green);
-    animation: pulse 1.5s ease infinite;
-  }
-
-  /* ===== RESPONSIVE ===== */
-  @media (max-width: 768px) {
-    .sidebar { display: none; }
-    .runner-layout { grid-template-columns: 1fr; }
-    .runner-sidebar { display: none; }
-    .role-select-grid { grid-template-columns: 1fr; }
-    .stager-bottom { grid-template-columns: 1fr; }
-    .page { padding: 16px; }
-  }
-
-  /* ===== SCROLL AREA ===== */
-  .scroll-area { overflow-y: auto; }
-
-  /* Color inputs */
-  input[type="color"] {
-    -webkit-appearance: none;
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 6px;
-    cursor: pointer;
-    padding: 0;
-    background: none;
-  }
-  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-  input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
-
-  .timer-color-bar {
-    width: 4px;
-    border-radius: 2px;
-    flex-shrink: 0;
-    align-self: stretch;
-  }
-
-  /* ===== FULLSCREEN TOGGLE ===== */
-  .fullscreen-btn {
-    position: fixed;
-    top: 16px;
-    right: 16px;
-    z-index: 100;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px;
-    padding: 8px 12px;
-    color: rgba(255,255,255,0.5);
-    font-size: 12px;
-    cursor: pointer;
-    font-family: var(--font-body);
-    transition: all 0.2s;
-  }
-  .fullscreen-btn:hover { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+ :root {
+ --bg: #0a0a0f;
+ --surface: #111118;
+ --surface2: #1a1a24;
+ --surface3: #22222f;
+ --border: #2a2a3a;
+ --accent: #e8ff47;
+ --accent2: #ff6b35;
+ --accent3: #4dc4ff;
+ --text: #f0f0f8;
+ --text2: #8888aa;
+ --text3: #555570;
+ --green: #4fffb0;
+ --red: #ff4f6a;
+ --yellow: #ffcc00;
+ --radius: 12px;
+ --radius-sm: 6px;
+ --font-display: 'Bebas Neue', sans-serif;
+ --font-mono: 'DM Mono', monospace;
+ --font-body: 'DM Sans', sans-serif;
+ }
+
+ * { margin: 0; padding: 0; box-sizing: border-box; }
+ 
+ body {
+ background: var(--bg);
+ color: var(--text);
+ font-family: var(--font-body);
+ min-height: 100vh;
+ overflow-x: hidden;
+ }
+
+ /* ===== SCROLLBAR ===== */
+ ::-webkit-scrollbar { width: 4px; }
+ ::-webkit-scrollbar-track { background: var(--bg); }
+ ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+ /* ===== SCREENS ===== */
+ .screen { display: none; min-height: 100vh; }
+ .screen.active { display: flex; flex-direction: column; }
+
+ /* ===== LANDING ===== */
+ #screen-landing {
+ align-items: center;
+ justify-content: center;
+ background: radial-gradient(ellipse at 20% 50%, #1a1a2e 0%, var(--bg) 60%),
+ radial-gradient(ellipse at 80% 20%, #0f1a2e 0%, transparent 50%);
+ position: relative;
+ overflow: hidden;
+ }
+
+ .landing-grid {
+ position: absolute;
+ inset: 0;
+ background-image: 
+ linear-gradient(var(--border) 1px, transparent 1px),
+ linear-gradient(90deg, var(--border) 1px, transparent 1px);
+ background-size: 60px 60px;
+ opacity: 0.3;
+ mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+ }
+
+ .landing-content {
+ position: relative;
+ z-index: 1;
+ text-align: center;
+ max-width: 600px;
+ padding: 40px 24px;
+ animation: fadeUp 0.8s ease both;
+ }
+
+ .logo-mark {
+ width: 64px;
+ height: 64px;
+ background: var(--accent);
+ border-radius: 16px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ margin: 0 auto 24px;
+ font-family: var(--font-display);
+ font-size: 28px;
+ color: var(--bg);
+ box-shadow: 0 0 40px rgba(232,255,71,0.3);
+ }
+
+ .landing-title {
+ font-family: var(--font-display);
+ font-size: clamp(56px, 10vw, 96px);
+ letter-spacing: 4px;
+ line-height: 0.9;
+ margin-bottom: 16px;
+ background: linear-gradient(135deg, var(--text) 0%, var(--text2) 100%);
+ -webkit-background-clip: text;
+ -webkit-text-fill-color: transparent;
+ background-clip: text;
+ }
+
+ .landing-sub {
+ color: var(--text2);
+ font-size: 16px;
+ font-weight: 300;
+ margin-bottom: 48px;
+ letter-spacing: 0.5px;
+ }
+
+ .landing-btns {
+ display: flex;
+ gap: 12px;
+ justify-content: center;
+ flex-wrap: wrap;
+ }
+
+ /* ===== BUTTONS ===== */
+ .btn {
+ display: inline-flex;
+ align-items: center;
+ gap: 8px;
+ padding: 12px 24px;
+ border-radius: var(--radius-sm);
+ font-family: var(--font-body);
+ font-size: 14px;
+ font-weight: 500;
+ cursor: pointer;
+ transition: all 0.2s;
+ border: none;
+ text-decoration: none;
+ white-space: nowrap;
+ }
+
+ .btn-primary {
+ background: var(--accent);
+ color: var(--bg);
+ }
+ .btn-primary:hover { background: #d4eb3a; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,255,71,0.25); }
+
+ .btn-secondary {
+ background: var(--surface2);
+ color: var(--text);
+ border: 1px solid var(--border);
+ }
+ .btn-secondary:hover { background: var(--surface3); border-color: var(--text3); }
+
+ .btn-ghost {
+ background: transparent;
+ color: var(--text2);
+ border: 1px solid var(--border);
+ }
+ .btn-ghost:hover { color: var(--text); border-color: var(--text3); }
+
+ .btn-danger { background: var(--red); color: white; }
+ .btn-danger:hover { background: #e03050; transform: translateY(-1px); }
+
+ .btn-success { background: var(--green); color: var(--bg); }
+ .btn-success:hover { background: #3de89a; }
+
+ .btn-sm { padding: 7px 14px; font-size: 12px; }
+ .btn-lg { padding: 16px 32px; font-size: 16px; }
+ .btn-icon { padding: 8px; width: 36px; height: 36px; justify-content: center; }
+ .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+ /* ===== AUTH ===== */
+ #screen-auth {
+ align-items: center;
+ justify-content: center;
+ background: var(--bg);
+ }
+
+ .auth-card {
+ width: 100%;
+ max-width: 420px;
+ background: var(--surface);
+ border: 1px solid var(--border);
+ border-radius: 20px;
+ padding: 40px;
+ animation: fadeUp 0.5s ease both;
+ }
+
+ .auth-logo {
+ display: flex;
+ align-items: center;
+ gap: 12px;
+ margin-bottom: 32px;
+ }
+
+ .auth-logo-mark {
+ width: 40px;
+ height: 40px;
+ background: var(--accent);
+ border-radius: 10px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-family: var(--font-display);
+ font-size: 18px;
+ color: var(--bg);
+ }
+
+ .auth-logo-text {
+ font-family: var(--font-display);
+ font-size: 28px;
+ letter-spacing: 2px;
+ color: var(--text);
+ }
+
+ .auth-title {
+ font-size: 22px;
+ font-weight: 600;
+ margin-bottom: 6px;
+ }
+
+ .auth-subtitle {
+ color: var(--text2);
+ font-size: 14px;
+ margin-bottom: 28px;
+ }
+
+ .auth-tabs {
+ display: flex;
+ border-bottom: 1px solid var(--border);
+ margin-bottom: 28px;
+ gap: 4px;
+ }
+
+ .auth-tab {
+ padding: 8px 16px;
+ font-size: 13px;
+ font-weight: 500;
+ color: var(--text2);
+ cursor: pointer;
+ border: none;
+ background: none;
+ border-bottom: 2px solid transparent;
+ margin-bottom: -1px;
+ transition: all 0.2s;
+ font-family: var(--font-body);
+ }
+
+ .auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+ /* ===== FORM ===== */
+ .form-group { margin-bottom: 16px; }
+
+ .form-label {
+ display: block;
+ font-size: 12px;
+ font-weight: 500;
+ color: var(--text2);
+ margin-bottom: 6px;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ }
+
+ .form-input {
+ width: 100%;
+ background: var(--surface2);
+ border: 1px solid var(--border);
+ border-radius: var(--radius-sm);
+ padding: 11px 14px;
+ font-size: 14px;
+ color: var(--text);
+ font-family: var(--font-body);
+ transition: border-color 0.2s;
+ outline: none;
+ }
+
+ .form-input:focus { border-color: var(--accent); }
+ .form-input::placeholder { color: var(--text3); }
+
+ textarea.form-input { resize: vertical; min-height: 80px; }
+ select.form-input { cursor: pointer; }
+
+ .form-error {
+ font-size: 12px;
+ color: var(--red);
+ margin-top: 6px;
+ }
+
+ /* ===== APP LAYOUT ===== */
+ #screen-app {
+ flex-direction: row;
+ min-height: 100vh;
+ }
+
+ .sidebar {
+ width: 240px;
+ min-width: 240px;
+ background: var(--surface);
+ border-right: 1px solid var(--border);
+ display: flex;
+ flex-direction: column;
+ padding: 0;
+ height: 100vh;
+ position: sticky;
+ top: 0;
+ }
+
+ .sidebar-header {
+ padding: 20px;
+ border-bottom: 1px solid var(--border);
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ }
+
+ .sidebar-logo-mark {
+ width: 32px;
+ height: 32px;
+ background: var(--accent);
+ border-radius: 8px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-family: var(--font-display);
+ font-size: 15px;
+ color: var(--bg);
+ flex-shrink: 0;
+ }
+
+ .sidebar-logo-text {
+ font-family: var(--font-display);
+ font-size: 22px;
+ letter-spacing: 2px;
+ }
+
+ .sidebar-nav {
+ flex: 1;
+ padding: 12px;
+ overflow-y: auto;
+ }
+
+ .sidebar-section-label {
+ font-size: 10px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 1px;
+ color: var(--text3);
+ padding: 12px 8px 6px;
+ }
+
+ .nav-item {
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ padding: 9px 12px;
+ border-radius: var(--radius-sm);
+ font-size: 13px;
+ font-weight: 500;
+ color: var(--text2);
+ cursor: pointer;
+ transition: all 0.15s;
+ text-decoration: none;
+ border: none;
+ background: none;
+ width: 100%;
+ text-align: left;
+ }
+
+ .nav-item:hover { background: var(--surface2); color: var(--text); }
+ .nav-item.active { background: rgba(232,255,71,0.1); color: var(--accent); }
+ .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+ .sidebar-footer {
+ padding: 16px;
+ border-top: 1px solid var(--border);
+ }
+
+ .user-chip {
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ padding: 10px 12px;
+ background: var(--surface2);
+ border-radius: var(--radius-sm);
+ margin-bottom: 8px;
+ }
+
+ .user-avatar {
+ width: 28px;
+ height: 28px;
+ border-radius: 50%;
+ background: var(--accent);
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-size: 12px;
+ font-weight: 700;
+ color: var(--bg);
+ flex-shrink: 0;
+ }
+
+ .user-info { flex: 1; min-width: 0; }
+ .user-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+ .user-email { font-size: 10px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+ /* ===== MAIN CONTENT ===== */
+ .main-content {
+ flex: 1;
+ overflow-y: auto;
+ background: var(--bg);
+ }
+
+ .page { display: none; padding: 32px; max-width: 1100px; }
+ .page.active { display: block; }
+
+ .page-header {
+ display: flex;
+ align-items: flex-start;
+ justify-content: space-between;
+ margin-bottom: 32px;
+ gap: 16px;
+ }
+
+ .page-title {
+ font-family: var(--font-display);
+ font-size: 40px;
+ letter-spacing: 2px;
+ line-height: 1;
+ }
+
+ .page-sub {
+ font-size: 14px;
+ color: var(--text2);
+ margin-top: 4px;
+ }
+
+ /* ===== CARDS ===== */
+ .card {
+ background: var(--surface);
+ border: 1px solid var(--border);
+ border-radius: var(--radius);
+ padding: 20px;
+ }
+
+ .card-title {
+ font-size: 13px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ color: var(--text2);
+ margin-bottom: 16px;
+ }
+
+ /* ===== SESSIONS GRID ===== */
+ .sessions-grid {
+ display: grid;
+ grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+ gap: 16px;
+ }
+
+ .session-card {
+ background: var(--surface);
+ border: 1px solid var(--border);
+ border-radius: var(--radius);
+ padding: 20px;
+ cursor: pointer;
+ transition: all 0.2s;
+ position: relative;
+ overflow: hidden;
+ }
+
+ .session-card::before {
+ content: '';
+ position: absolute;
+ top: 0;
+ left: 0;
+ right: 0;
+ height: 3px;
+ background: var(--accent);
+ transform: scaleX(0);
+ transition: transform 0.2s;
+ transform-origin: left;
+ }
+
+ .session-card:hover { border-color: var(--text3); transform: translateY(-2px); }
+ .session-card:hover::before { transform: scaleX(1); }
+
+ .session-card-name {
+ font-size: 16px;
+ font-weight: 600;
+ margin-bottom: 6px;
+ }
+
+ .session-card-desc {
+ font-size: 13px;
+ color: var(--text2);
+ margin-bottom: 16px;
+ line-height: 1.4;
+ }
+
+ .session-card-meta {
+ display: flex;
+ gap: 12px;
+ font-size: 11px;
+ color: var(--text3);
+ }
+
+ .badge {
+ display: inline-flex;
+ align-items: center;
+ gap: 4px;
+ padding: 3px 8px;
+ border-radius: 20px;
+ font-size: 11px;
+ font-weight: 500;
+ }
+
+ .badge-green { background: rgba(79,255,176,0.15); color: var(--green); }
+ .badge-yellow { background: rgba(255,204,0,0.15); color: var(--yellow); }
+ .badge-red { background: rgba(255,79,106,0.15); color: var(--red); }
+ .badge-blue { background: rgba(77,196,255,0.15); color: var(--accent3); }
+ .badge-gray { background: var(--surface2); color: var(--text2); }
+
+ /* ===== SESSION DETAIL ===== */
+ .session-detail-header {
+ background: var(--surface);
+ border-bottom: 1px solid var(--border);
+ padding: 20px 32px;
+ display: flex;
+ align-items: center;
+ gap: 16px;
+ position: sticky;
+ top: 0;
+ z-index: 10;
+ }
+
+ .session-detail-title { font-size: 20px; font-weight: 600; }
+ .session-detail-meta { font-size: 13px; color: var(--text2); }
+
+ /* ===== TIMERS LIST ===== */
+ .timers-list { display: flex; flex-direction: column; gap: 12px; }
+
+ .timer-row {
+ background: var(--surface);
+ border: 1px solid var(--border);
+ border-radius: var(--radius);
+ padding: 16px 20px;
+ display: flex;
+ align-items: center;
+ gap: 16px;
+ transition: all 0.2s;
+ }
+
+ .timer-row:hover { border-color: var(--text3); }
+ .timer-row.active-timer { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); }
+ .timer-row.paused-timer { border-color: var(--yellow); }
+
+ .timer-drag-handle {
+ color: var(--text3);
+ cursor: grab;
+ font-size: 18px;
+ user-select: none;
+ }
+
+ .timer-order {
+ font-family: var(--font-mono);
+ font-size: 11px;
+ color: var(--text3);
+ width: 20px;
+ text-align: center;
+ flex-shrink: 0;
+ }
+
+ .timer-info { flex: 1; min-width: 0; }
+ .timer-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+ .timer-speaker { font-size: 12px; color: var(--text2); }
+
+ .timer-duration {
+ font-family: var(--font-mono);
+ font-size: 24px;
+ font-weight: 500;
+ color: var(--accent);
+ letter-spacing: 1px;
+ flex-shrink: 0;
+ }
+
+ .timer-duration.warning { color: var(--yellow); }
+ .timer-duration.danger { color: var(--red); animation: blink 0.5s ease infinite alternate; }
+
+ .timer-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+ /* ===== STAGER VIEW ===== */
+ #screen-stager {
+ background: #000;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ min-height: 100vh;
+ }
+
+ .stager-wrapper {
+ width: 100%;
+ max-width: 900px;
+ padding: 40px 24px;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ gap: 32px;
+ }
+
+ .stager-header {
+ width: 100%;
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ }
+
+ .stager-session-name {
+ font-family: var(--font-display);
+ font-size: 24px;
+ letter-spacing: 2px;
+ color: rgba(255,255,255,0.4);
+ }
+
+ .stager-device-name {
+ font-size: 12px;
+ color: rgba(255,255,255,0.2);
+ font-family: var(--font-mono);
+ }
+
+ .stager-main-timer {
+ text-align: center;
+ width: 100%;
+ }
+
+ .stager-speaker-name {
+ font-size: 18px;
+ color: rgba(255,255,255,0.5);
+ margin-bottom: 8px;
+ font-weight: 300;
+ letter-spacing: 1px;
+ }
+
+ .stager-timer-label {
+ font-size: 13px;
+ text-transform: uppercase;
+ letter-spacing: 2px;
+ color: rgba(255,255,255,0.3);
+ margin-bottom: 16px;
+ }
+
+ .stager-time {
+ font-family: var(--font-mono);
+ font-size: clamp(80px, 18vw, 180px);
+ font-weight: 300;
+ line-height: 1;
+ letter-spacing: -2px;
+ transition: color 0.5s;
+ color: #fff;
+ }
+
+ .stager-time.warning { color: #ffcc00; }
+ .stager-time.danger { color: #ff4f6a; }
+ .stager-time.finished { color: #ff4f6a; animation: blink 0.4s ease infinite alternate; }
+
+ .stager-timer-name {
+ font-family: var(--font-display);
+ font-size: 28px;
+ letter-spacing: 2px;
+ margin-top: 12px;
+ color: rgba(255,255,255,0.7);
+ }
+
+ .stager-bottom {
+ width: 100%;
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 20px;
+ }
+
+ .stager-panel {
+ background: rgba(255,255,255,0.04);
+ border: 1px solid rgba(255,255,255,0.08);
+ border-radius: var(--radius);
+ padding: 20px;
+ }
+
+ .stager-panel-label {
+ font-size: 10px;
+ text-transform: uppercase;
+ letter-spacing: 2px;
+ color: rgba(255,255,255,0.25);
+ margin-bottom: 10px;
+ }
+
+ .stager-next-name {
+ font-size: 18px;
+ font-weight: 600;
+ margin-bottom: 4px;
+ }
+
+ .stager-next-time {
+ font-family: var(--font-mono);
+ font-size: 32px;
+ color: rgba(255,255,255,0.4);
+ }
+
+ .stager-messages { display: flex; flex-direction: column; gap: 8px; max-height: 120px; overflow-y: auto; }
+
+ .stager-message {
+ background: rgba(232,255,71,0.1);
+ border-left: 2px solid var(--accent);
+ padding: 8px 12px;
+ border-radius: 0 6px 6px 0;
+ font-size: 13px;
+ color: rgba(255,255,255,0.8);
+ animation: fadeUp 0.3s ease both;
+ }
+
+ .stager-no-timer {
+ text-align: center;
+ font-family: var(--font-mono);
+ color: rgba(255,255,255,0.15);
+ font-size: 18px;
+ }
+
+ .stager-progress {
+ width: 100%;
+ height: 4px;
+ background: rgba(255,255,255,0.08);
+ border-radius: 2px;
+ overflow: hidden;
+ margin-top: 20px;
+ }
+
+ .stager-progress-bar {
+ height: 100%;
+ background: var(--green);
+ border-radius: 2px;
+ transition: width 1s linear, background 0.5s;
+ }
+
+ /* ===== DEVICES ===== */
+ .devices-grid {
+ display: grid;
+ grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+ gap: 16px;
+ }
+
+ .device-card {
+ background: var(--surface);
+ border: 1px solid var(--border);
+ border-radius: var(--radius);
+ padding: 20px;
+ text-align: center;
+ cursor: pointer;
+ transition: all 0.2s;
+ }
+
+ .device-card:hover { border-color: var(--text3); transform: translateY(-2px); }
+ .device-card.active-device { border-color: var(--green); }
+
+ .device-icon { font-size: 32px; margin-bottom: 10px; }
+ .device-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+ .device-role { font-size: 11px; color: var(--text2); }
+
+ /* ===== MODAL ===== */
+ .modal-overlay {
+ position: fixed;
+ inset: 0;
+ background: rgba(0,0,0,0.7);
+ backdrop-filter: blur(4px);
+ z-index: 1000;
+ display: none;
+ align-items: center;
+ justify-content: center;
+ padding: 20px;
+ }
+
+ .modal-overlay.active { display: flex; }
+
+ .modal {
+ background: var(--surface);
+ border: 1px solid var(--border);
+ border-radius: 20px;
+ padding: 32px;
+ width: 100%;
+ max-width: 500px;
+ animation: scaleIn 0.2s ease both;
+ max-height: 90vh;
+ overflow-y: auto;
+ }
+
+ .modal-title {
+ font-size: 20px;
+ font-weight: 700;
+ margin-bottom: 24px;
+ }
+
+ .modal-footer {
+ display: flex;
+ justify-content: flex-end;
+ gap: 10px;
+ margin-top: 28px;
+ }
+
+ /* ===== MESSAGE SENDER ===== */
+ .message-form {
+ display: flex;
+ gap: 8px;
+ margin-bottom: 16px;
+ }
+
+ /* ===== STATS ROW ===== */
+ .stats-row {
+ display: grid;
+ grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+ gap: 12px;
+ margin-bottom: 28px;
+ }
+
+ .stat-card {
+ background: var(--surface);
+ border: 1px solid var(--border);
+ border-radius: var(--radius-sm);
+ padding: 16px;
+ }
+
+ .stat-value {
+ font-family: var(--font-mono);
+ font-size: 28px;
+ font-weight: 500;
+ color: var(--accent);
+ }
+
+ .stat-label {
+ font-size: 11px;
+ color: var(--text2);
+ margin-top: 4px;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ }
+
+ /* ===== TOAST ===== */
+ .toast-container {
+ position: fixed;
+ bottom: 24px;
+ right: 24px;
+ z-index: 9999;
+ display: flex;
+ flex-direction: column;
+ gap: 8px;
+ }
+
+ .toast {
+ background: var(--surface2);
+ border: 1px solid var(--border);
+ border-radius: var(--radius-sm);
+ padding: 12px 16px;
+ font-size: 13px;
+ min-width: 240px;
+ max-width: 360px;
+ animation: toastIn 0.3s ease both;
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ }
+
+ .toast.success { border-left: 3px solid var(--green); }
+ .toast.error { border-left: 3px solid var(--red); }
+ .toast.info { border-left: 3px solid var(--accent3); }
+
+ /* ===== LOADING ===== */
+ .loader {
+ width: 20px;
+ height: 20px;
+ border: 2px solid var(--border);
+ border-top-color: var(--accent);
+ border-radius: 50%;
+ animation: spin 0.6s linear infinite;
+ display: inline-block;
+ }
+
+ .loading-overlay {
+ position: fixed;
+ inset: 0;
+ background: var(--bg);
+ z-index: 9998;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ flex-direction: column;
+ gap: 16px;
+ }
+
+ .loading-overlay.hidden { display: none; }
+
+ /* ===== DIVIDER ===== */
+ .divider {
+ height: 1px;
+ background: var(--border);
+ margin: 20px 0;
+ }
+
+ /* ===== EMPTY STATE ===== */
+ .empty-state {
+ text-align: center;
+ padding: 60px 20px;
+ color: var(--text3);
+ }
+
+ .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
+ .empty-state-text { font-size: 15px; margin-bottom: 8px; color: var(--text2); }
+ .empty-state-sub { font-size: 13px; }
+
+ /* ===== TIMER DETAIL ===== */
+ .timer-detail-view { max-width: 700px; }
+
+ /* ===== STAGER SELECT ===== */
+ .stager-select-screen {
+ min-height: 100vh;
+ background: var(--bg);
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ padding: 40px 24px;
+ }
+
+ .role-select-grid {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 16px;
+ margin-top: 28px;
+ }
+
+ .role-card {
+ background: var(--surface);
+ border: 2px solid var(--border);
+ border-radius: var(--radius);
+ padding: 32px 24px;
+ text-align: center;
+ cursor: pointer;
+ transition: all 0.2s;
+ }
+
+ .role-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
+
+ .role-icon { font-size: 48px; margin-bottom: 16px; }
+ .role-name { font-family: var(--font-display); font-size: 32px; letter-spacing: 2px; margin-bottom: 8px; }
+ .role-desc { font-size: 13px; color: var(--text2); }
+
+ /* ===== SESSION RUNNER ===== */
+ .runner-layout {
+ display: grid;
+ grid-template-columns: 1fr 320px;
+ gap: 0;
+ height: 100vh;
+ overflow: hidden;
+ }
+
+ .runner-main {
+ display: flex;
+ flex-direction: column;
+ overflow-y: auto;
+ padding: 24px;
+ }
+
+ .runner-sidebar {
+ background: var(--surface);
+ border-left: 1px solid var(--border);
+ display: flex;
+ flex-direction: column;
+ overflow: hidden;
+ }
+
+ .runner-sidebar-header {
+ padding: 16px;
+ border-bottom: 1px solid var(--border);
+ font-size: 12px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ color: var(--text2);
+ }
+
+ .runner-timer-list {
+ flex: 1;
+ overflow-y: auto;
+ padding: 12px;
+ }
+
+ .runner-timer-item {
+ padding: 12px;
+ border-radius: var(--radius-sm);
+ margin-bottom: 6px;
+ border: 1px solid var(--border);
+ cursor: pointer;
+ transition: all 0.15s;
+ }
+
+ .runner-timer-item:hover { border-color: var(--text3); }
+ .runner-timer-item.current { border-color: var(--green); background: rgba(79,255,176,0.05); }
+ .runner-timer-item.done { opacity: 0.4; }
+
+ .runner-timer-item-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+ .runner-timer-item-dur { font-size: 11px; color: var(--text3); font-family: var(--font-mono); }
+
+ .runner-controls {
+ display: flex;
+ gap: 8px;
+ flex-wrap: wrap;
+ margin-bottom: 20px;
+ }
+
+ /* ===== SEND MESSAGE AREA ===== */
+ .msg-area {
+ padding: 16px;
+ border-top: 1px solid var(--border);
+ }
+
+ .msg-device-tabs {
+ display: flex;
+ gap: 4px;
+ margin-bottom: 8px;
+ flex-wrap: wrap;
+ }
+
+ .msg-device-tab {
+ padding: 4px 10px;
+ border-radius: 20px;
+ font-size: 11px;
+ cursor: pointer;
+ border: 1px solid var(--border);
+ background: transparent;
+ color: var(--text2);
+ font-family: var(--font-body);
+ transition: all 0.15s;
+ }
+
+ .msg-device-tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+ /* ===== ANIMATIONS ===== */
+ @keyframes fadeUp {
+ from { opacity: 0; transform: translateY(20px); }
+ to { opacity: 1; transform: translateY(0); }
+ }
+
+ @keyframes scaleIn {
+ from { opacity: 0; transform: scale(0.95); }
+ to { opacity: 1; transform: scale(1); }
+ }
+
+ @keyframes spin {
+ to { transform: rotate(360deg); }
+ }
+
+ @keyframes blink {
+ from { opacity: 1; }
+ to { opacity: 0.2; }
+ }
+
+ @keyframes toastIn {
+ from { opacity: 0; transform: translateX(20px); }
+ to { opacity: 1; transform: translateX(0); }
+ }
+
+ @keyframes pulse {
+ 0%, 100% { opacity: 1; }
+ 50% { opacity: 0.4; }
+ }
+
+ /* ===== FLEX UTILITIES ===== */
+ .flex { display: flex; }
+ .flex-col { flex-direction: column; }
+ .items-center { align-items: center; }
+ .justify-between { justify-content: space-between; }
+ .gap-8 { gap: 8px; }
+ .gap-12 { gap: 12px; }
+ .gap-16 { gap: 16px; }
+ .mt-16 { margin-top: 16px; }
+ .mt-24 { margin-top: 24px; }
+ .mb-16 { margin-bottom: 16px; }
+ .mb-24 { margin-bottom: 24px; }
+ .text-sm { font-size: 13px; }
+ .text-xs { font-size: 11px; }
+ .text-muted { color: var(--text2); }
+ .font-mono { font-family: var(--font-mono); }
+ .w-full { width: 100%; }
+
+ /* ===== COLOR DOT ===== */
+ .color-dot {
+ width: 8px;
+ height: 8px;
+ border-radius: 50%;
+ flex-shrink: 0;
+ }
+
+ .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+ .dot-red { background: var(--red); }
+ .dot-yellow { background: var(--yellow); }
+ .dot-gray { background: var(--text3); }
+
+ /* live dot */
+ .live-dot {
+ width: 8px;
+ height: 8px;
+ border-radius: 50%;
+ background: var(--green);
+ animation: pulse 1.5s ease infinite;
+ }
+
+ /* ===== RESPONSIVE ===== */
+ @media (max-width: 768px) {
+ .sidebar { display: none; }
+ .runner-layout { grid-template-columns: 1fr; }
+ .runner-sidebar { display: none; }
+ .role-select-grid { grid-template-columns: 1fr; }
+ .stager-bottom { grid-template-columns: 1fr; }
+ .page { padding: 16px; }
+ }
+
+ /* ===== SCROLL AREA ===== */
+ .scroll-area { overflow-y: auto; }
+
+ /* Color inputs */
+ input[type="color"] {
+ -webkit-appearance: none;
+ border: none;
+ width: 36px;
+ height: 36px;
+ border-radius: 6px;
+ cursor: pointer;
+ padding: 0;
+ background: none;
+ }
+ input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+ input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
+
+ .timer-color-bar {
+ width: 4px;
+ border-radius: 2px;
+ flex-shrink: 0;
+ align-self: stretch;
+ }
+
+ /* ===== FULLSCREEN TOGGLE ===== */
+ .fullscreen-btn {
+ position: fixed;
+ top: 16px;
+ right: 16px;
+ z-index: 100;
+ background: rgba(255,255,255,0.1);
+ border: 1px solid rgba(255,255,255,0.15);
+ border-radius: 8px;
+ padding: 8px 12px;
+ color: rgba(255,255,255,0.5);
+ font-size: 12px;
+ cursor: pointer;
+ font-family: var(--font-body);
+ transition: all 0.2s;
+ }
+ .fullscreen-btn:hover { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+
+ /* ===== STAGER MESSAGE POPUP (landscape mobile) ===== */
+ .stager-msg-popup {
+   position: fixed;
+   top: 0; left: 0; right: 0;
+   z-index: 9999;
+   padding: 10px 16px;
+   background: rgba(232,255,71,0.97);
+   color: #000;
+   font-family: var(--font-body);
+   font-size: 15px;
+   font-weight: 600;
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+   transform: translateY(-100%);
+   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+   pointer-events: none;
+   overflow: hidden;
+ }
+ .stager-msg-popup.visible {
+   transform: translateY(0);
+ }
+ .stager-msg-popup-label {
+   font-size: 9px;
+   font-weight: 700;
+   text-transform: uppercase;
+   letter-spacing: 1.5px;
+   opacity: 0.55;
+   white-space: nowrap;
+   flex-shrink: 0;
+   border-right: 1px solid rgba(0,0,0,0.2);
+   padding-right: 10px;
+   margin-right: 2px;
+ }
+ .stager-msg-popup-text {
+   flex: 1;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+ }
+ .stager-msg-popup-bar {
+   position: absolute;
+   bottom: 0; left: 0;
+   height: 3px;
+   background: rgba(0,0,0,0.25);
+   width: 100%;
+   transform-origin: left;
+ }
+ .stager-msg-popup.visible .stager-msg-popup-bar {
+   animation: popupCountdown 5s linear forwards;
+ }
+ @keyframes popupCountdown {
+   from { transform: scaleX(1); }
+   to   { transform: scaleX(0); }
+ }
+ /* Only show popup on small landscape (phone horizontal) */
+ @media (orientation: landscape) and (max-height: 500px) {
+   .stager-msg-popup { display: flex; }
+ }
+ @media not ((orientation: landscape) and (max-height: 500px)) {
+   .stager-msg-popup { display: none !important; }
+ }
 </style>
 </head>
 <body>
 
 <!-- LOADING -->
 <div class="loading-overlay" id="loading-overlay">
-  <div class="logo-mark">SF</div>
-  <div class="loader"></div>
+ <div class="logo-mark">JS</div>
+ <div class="loader"></div>
 </div>
 
 <!-- TOAST CONTAINER -->
@@ -1174,281 +1238,291 @@
 
 <!-- MODAL OVERLAY -->
 <div class="modal-overlay" id="modal-overlay">
-  <div class="modal" id="modal-content"></div>
+ <div class="modal" id="modal-content"></div>
 </div>
 
 <!-- ===== LANDING ===== -->
 <div class="screen active" id="screen-landing">
-  <div class="landing-grid"></div>
-  <div class="landing-content">
-    <div class="logo-mark">SF</div>
-    <h1 class="landing-title">STAGE<br>FLOW</h1>
-    <p class="landing-sub">Control de escenario en tiempo real.<br>Para organizadores y presentadores.</p>
-    <div class="landing-btns">
-      <button class="btn btn-primary btn-lg" onclick="showAuth('login')">Iniciar Sesión</button>
-      <button class="btn btn-ghost btn-lg" onclick="showAuth('register')">Crear Cuenta</button>
-    </div>
-  </div>
+ <div class="landing-grid"></div>
+ <div class="landing-content">
+ <div class="logo-mark">JS</div>
+ <h1 class="landing-title">JW<br>STAGER</h1>
+ <p class="landing-sub">Control de escenario en tiempo real.<br>Para organizadores y presentadores.</p>
+ <div class="landing-btns">
+ <button class="btn btn-primary btn-lg" onclick="showAuth('login')">Iniciar Sesión</button>
+ <button class="btn btn-ghost btn-lg" onclick="showAuth('register')">Crear Cuenta</button>
+ </div>
+ </div>
 </div>
 
 <!-- ===== AUTH ===== -->
 <div class="screen" id="screen-auth">
-  <div class="auth-card" style="margin:auto;">
-    <div class="auth-logo">
-      <div class="auth-logo-mark">JW</div>
-      <span class="auth-logo-text">Stager</span>
-    </div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Iniciar Sesión</button>
-      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Registrarse</button>
-    </div>
-    <!-- Login Form -->
-    <div id="form-login">
-      <div class="form-group">
-        <label class="form-label">Email</label>
-        <input type="email" id="login-email" class="form-input" placeholder="tu@email.com">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Contraseña</label>
-        <input type="password" id="login-password" class="form-input" placeholder="••••••••">
-      </div>
-      <div id="login-error" class="form-error" style="display:none;margin-bottom:12px;"></div>
-      <button class="btn btn-primary w-full" id="btn-login" onclick="doLogin()">
-        <span id="login-btn-text">Entrar</span>
-      </button>
-    </div>
-    <!-- Register Form -->
-    <div id="form-register" style="display:none;">
-      <div class="form-group">
-        <label class="form-label">Nombre</label>
-        <input type="text" id="reg-name" class="form-input" placeholder="Tu nombre">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Email</label>
-        <input type="email" id="reg-email" class="form-input" placeholder="tu@email.com">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Contraseña</label>
-        <input type="password" id="reg-password" class="form-input" placeholder="Mínimo 6 caracteres">
-      </div>
-      <div id="register-error" class="form-error" style="display:none;margin-bottom:12px;"></div>
-      <button class="btn btn-primary w-full" id="btn-register" onclick="doRegister()">
-        <span id="register-btn-text">Crear Cuenta</span>
-      </button>
-    </div>
-    <div class="divider"></div>
-    <button class="btn btn-ghost w-full" onclick="showScreen('screen-landing')">← Volver</button>
-  </div>
+ <div class="auth-card" style="margin:auto;">
+ <div class="auth-logo">
+ <div class="auth-logo-mark">JS</div>
+ <span class="auth-logo-text">JW STAGER</span>
+ </div>
+ <div class="auth-tabs">
+ <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Iniciar Sesión</button>
+ <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Registrarse</button>
+ </div>
+ <!-- Login Form -->
+ <div id="form-login">
+ <div class="form-group">
+ <label class="form-label">Email</label>
+ <input type="email" id="login-email" class="form-input" placeholder="tu@email.com">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Contraseña</label>
+ <input type="password" id="login-password" class="form-input" placeholder="••••••••">
+ </div>
+ <div id="login-error" class="form-error" style="display:none;margin-bottom:12px;"></div>
+ <button class="btn btn-primary w-full" id="btn-login" onclick="doLogin()">
+ <span id="login-btn-text">Entrar</span>
+ </button>
+ </div>
+ <!-- Register Form -->
+ <div id="form-register" style="display:none;">
+ <div class="form-group">
+ <label class="form-label">Nombre</label>
+ <input type="text" id="reg-name" class="form-input" placeholder="Tu nombre">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Nombre de la Congregación</label>
+ <input type="text" id="reg-congregation" class="form-input" placeholder="Ej: Congregación Norte">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Email</label>
+ <input type="email" id="reg-email" class="form-input" placeholder="tu@email.com">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Contraseña</label>
+ <input type="password" id="reg-password" class="form-input" placeholder="Mínimo 6 caracteres">
+ </div>
+ <div id="register-error" class="form-error" style="display:none;margin-bottom:12px;"></div>
+ <button class="btn btn-primary w-full" id="btn-register" onclick="doRegister()">
+ <span id="register-btn-text">Crear Cuenta</span>
+ </button>
+ </div>
+ <div class="divider"></div>
+ <button class="btn btn-ghost w-full" onclick="showScreen('screen-landing')">← Volver</button>
+ </div>
 </div>
 
 <!-- ===== MAIN APP ===== -->
 <div class="screen" id="screen-app">
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo-mark">JW</div>
-      <span class="sidebar-logo-text">Stager</span>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="sidebar-section-label">Principal</div>
-      <button class="nav-item active" onclick="showPage('page-dashboard')">
-        <span class="icon">⬡</span> Dashboard
-      </button>
-      <button class="nav-item" onclick="showPage('page-sessions')">
-        <span class="icon">📋</span> Sesiones
-      </button>
-      <div class="sidebar-section-label">Dispositivos</div>
-      <button class="nav-item" onclick="showPage('page-devices')">
-        <span class="icon">📱</span> Mis Dispositivos
-      </button>
-      <div class="sidebar-section-label">Cuenta</div>
-      <button class="nav-item" onclick="showPage('page-account')">
-        <span class="icon">👤</span> Mi Cuenta
-      </button>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-chip">
-        <div class="user-avatar" id="sidebar-avatar">?</div>
-        <div class="user-info">
-          <div class="user-name" id="sidebar-name">Cargando...</div>
-          <div class="user-email" id="sidebar-email">...</div>
-        </div>
-      </div>
-      <button class="btn btn-ghost btn-sm w-full" onclick="doLogout()">Cerrar Sesión</button>
-    </div>
-  </aside>
+ <!-- Sidebar -->
+ <aside class="sidebar">
+ <div class="sidebar-header">
+ <div class="sidebar-logo-mark">JS</div>
+ <span class="sidebar-logo-text">JW STAGER</span>
+ </div>
+ <nav class="sidebar-nav">
+ <div class="sidebar-section-label">Principal</div>
+ <button class="nav-item active" onclick="showPage('page-dashboard')">
+ <span class="icon">DB</span> Dashboard
+ </button>
+ <button class="nav-item" onclick="showPage('page-sessions')">
+ <span class="icon">SE</span> Sesiones
+ </button>
+ <div class="sidebar-section-label">Dispositivos</div>
+ <button class="nav-item" onclick="showPage('page-devices')">
+ <span class="icon">DV</span> Mis Dispositivos
+ </button>
+ <div class="sidebar-section-label">Cuenta</div>
+ <button class="nav-item" onclick="showPage('page-account')">
+ <span class="icon">UC</span> Mi Cuenta
+ </button>
+ </nav>
+ <div class="sidebar-footer">
+ <div class="user-chip">
+ <div class="user-avatar" id="sidebar-avatar">?</div>
+ <div class="user-info">
+ <div class="user-name" id="sidebar-name">Cargando...</div>
+ <div class="user-email" id="sidebar-email">...</div>
+ </div>
+ </div>
+ <button class="btn btn-ghost btn-sm w-full" onclick="doLogout()">Cerrar Sesión</button>
+ </div>
+ </aside>
 
-  <!-- Main Content -->
-  <div class="main-content" id="main-content">
+ <!-- Main Content -->
+ <div class="main-content" id="main-content">
 
-    <!-- DASHBOARD -->
-    <div class="page active" id="page-dashboard">
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">DASHBOARD</h1>
-          <p class="page-sub">Bienvenido a JW Stager</p>
-        </div>
-        <button class="btn btn-primary" onclick="openCreateSession()">+ Nueva Sesión</button>
-      </div>
-      <div class="stats-row" id="dashboard-stats">
-        <div class="stat-card">
-          <div class="stat-value" id="stat-sessions">0</div>
-          <div class="stat-label">Sesiones</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-timers">0</div>
-          <div class="stat-label">Timers Totales</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-devices">0</div>
-          <div class="stat-label">Dispositivos</div>
-        </div>
-      </div>
-      <h2 class="card-title" style="margin-bottom:16px;">Sesiones Recientes</h2>
-      <div id="dashboard-recent-sessions" class="sessions-grid"></div>
-    </div>
+ <!-- DASHBOARD -->
+ <div class="page active" id="page-dashboard">
+ <div class="page-header">
+ <div>
+ <h1 class="page-title">DASHBOARD</h1>
+ <p class="page-sub">Bienvenido a JW Stager</p>
+ </div>
+ <button class="btn btn-primary" onclick="openCreateSession()">+ Nueva Sesión</button>
+ </div>
+ <div class="stats-row" id="dashboard-stats">
+ <div class="stat-card">
+ <div class="stat-value" id="stat-sessions">0</div>
+ <div class="stat-label">Sesiones</div>
+ </div>
+ <div class="stat-card">
+ <div class="stat-value" id="stat-timers">0</div>
+ <div class="stat-label">Timers Totales</div>
+ </div>
+ <div class="stat-card">
+ <div class="stat-value" id="stat-devices">0</div>
+ <div class="stat-label">Dispositivos</div>
+ </div>
+ </div>
+ <h2 class="card-title" style="margin-bottom:16px;">Sesiones Recientes</h2>
+ <div id="dashboard-recent-sessions" class="sessions-grid"></div>
+ </div>
 
-    <!-- SESSIONS LIST -->
-    <div class="page" id="page-sessions">
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">SESIONES</h1>
-          <p class="page-sub">Gestiona tus sesiones de evento</p>
-        </div>
-        <button class="btn btn-primary" onclick="openCreateSession()">+ Nueva Sesión</button>
-      </div>
-      <div id="sessions-list" class="sessions-grid"></div>
-    </div>
+ <!-- SESSIONS LIST -->
+ <div class="page" id="page-sessions">
+ <div class="page-header">
+ <div>
+ <h1 class="page-title">SESIONES</h1>
+ <p class="page-sub">Gestiona tus sesiones de evento</p>
+ </div>
+ <button class="btn btn-primary" onclick="openCreateSession()">+ Nueva Sesión</button>
+ </div>
+ <div id="sessions-list" class="sessions-grid"></div>
+ </div>
 
-    <!-- SESSION DETAIL -->
-    <div class="page" id="page-session-detail">
-      <div id="session-detail-body"></div>
-    </div>
+ <!-- SESSION DETAIL -->
+ <div class="page" id="page-session-detail">
+ <div id="session-detail-body"></div>
+ </div>
 
-    <!-- DEVICES -->
-    <div class="page" id="page-devices">
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">DISPOSITIVOS</h1>
-          <p class="page-sub">Hasta 5 dispositivos por cuenta</p>
-        </div>
-        <button class="btn btn-primary" id="btn-add-device" onclick="openAddDevice()">+ Agregar Dispositivo</button>
-      </div>
-      <div id="devices-list" class="devices-grid"></div>
-    </div>
+ <!-- DEVICES -->
+ <div class="page" id="page-devices">
+ <div class="page-header">
+ <div>
+ <h1 class="page-title">DISPOSITIVOS</h1>
+ <p class="page-sub">Hasta 5 dispositivos por cuenta</p>
+ </div>
+ <button class="btn btn-primary" id="btn-add-device" onclick="openAddDevice()">+ Agregar Dispositivo</button>
+ </div>
+ <div id="devices-list" class="devices-grid"></div>
+ </div>
 
-    <!-- ACCOUNT -->
-    <div class="page" id="page-account">
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">MI CUENTA</h1>
-        </div>
-      </div>
-      <div class="card" style="max-width:500px;">
-        <div class="card-title">Información Personal</div>
-        <div class="form-group">
-          <label class="form-label">Nombre</label>
-          <input type="text" id="account-name" class="form-input">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" id="account-email" class="form-input" disabled>
-        </div>
-        <button class="btn btn-primary" onclick="saveAccount()">Guardar Cambios</button>
-      </div>
-      <div class="card mt-24" style="max-width:500px;">
-        <div class="card-title">Cambiar Contraseña</div>
-        <div class="form-group">
-          <label class="form-label">Nueva Contraseña</label>
-          <input type="password" id="new-password" class="form-input" placeholder="Mínimo 6 caracteres">
-        </div>
-        <button class="btn btn-secondary" onclick="changePassword()">Actualizar Contraseña</button>
-      </div>
-    </div>
+ <!-- ACCOUNT -->
+ <div class="page" id="page-account">
+ <div class="page-header">
+ <div>
+ <h1 class="page-title">MI CUENTA</h1>
+ </div>
+ </div>
+ <div class="card" style="max-width:500px;">
+ <div class="card-title">Información Personal</div>
+ <div class="form-group">
+ <label class="form-label">Nombre</label>
+ <input type="text" id="account-name" class="form-input">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Email</label>
+ <input type="email" id="account-email" class="form-input" disabled>
+ </div>
+ <button class="btn btn-primary" onclick="saveAccount()">Guardar Cambios</button>
+ </div>
+ <div class="card mt-24" style="max-width:500px;">
+ <div class="card-title">Cambiar Contraseña</div>
+ <div class="form-group">
+ <label class="form-label">Nueva Contraseña</label>
+ <input type="password" id="new-password" class="form-input" placeholder="Mínimo 6 caracteres">
+ </div>
+ <button class="btn btn-secondary" onclick="changePassword()">Actualizar Contraseña</button>
+ </div>
+ </div>
 
-  </div>
+ </div>
 </div>
 
 <!-- ===== STAGER VIEW ===== -->
 <div class="screen" id="screen-stager">
-  <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ Pantalla completa</button>
-  <div class="stager-wrapper">
-    <div class="stager-header">
-      <div class="stager-session-name" id="stager-session-name">—</div>
-      <div class="stager-device-name" id="stager-device-display">DISPOSITIVO —</div>
-    </div>
+ <!-- Message popup for landscape mobile -->
+ <div class="stager-msg-popup" id="stager-msg-popup">
+   <div class="stager-msg-popup-label">Mensaje</div>
+   <div class="stager-msg-popup-text" id="stager-msg-popup-text"></div>
+   <div class="stager-msg-popup-bar"></div>
+ </div>
+ <button class="fullscreen-btn" onclick="toggleFullscreen()"> Pantalla completa</button>
+ <div class="stager-wrapper">
+ <div class="stager-header">
+ <div class="stager-session-name" id="stager-session-name">—</div>
+ <div class="stager-device-name" id="stager-device-display">DISPOSITIVO —</div>
+ </div>
 
-    <div class="stager-main-timer" id="stager-main">
-      <div class="stager-no-timer">Esperando sesión...</div>
-    </div>
+ <div class="stager-main-timer" id="stager-main">
+ <div class="stager-no-timer">Esperando sesión...</div>
+ </div>
 
-    <div class="stager-bottom">
-      <div class="stager-panel">
-        <div class="stager-panel-label">Siguiente</div>
-        <div id="stager-next-content">
-          <div style="color:rgba(255,255,255,0.2);font-size:13px;">Sin turno siguiente</div>
-        </div>
-      </div>
-      <div class="stager-panel">
-        <div class="stager-panel-label">Mensajes del Organizador</div>
-        <div class="stager-messages" id="stager-messages">
-          <div style="color:rgba(255,255,255,0.2);font-size:13px;">Sin mensajes</div>
-        </div>
-      </div>
-    </div>
-  </div>
+ <div class="stager-bottom">
+ <div class="stager-panel">
+ <div class="stager-panel-label">Siguiente</div>
+ <div id="stager-next-content">
+ <div style="color:rgba(255,255,255,0.2);font-size:13px;">Sin turno siguiente</div>
+ </div>
+ </div>
+ <div class="stager-panel">
+ <div class="stager-panel-label">Mensajes del Organizador</div>
+ <div class="stager-messages" id="stager-messages">
+ <div style="color:rgba(255,255,255,0.2);font-size:13px;">Sin mensajes</div>
+ </div>
+ </div>
+ </div>
+ </div>
 </div>
 
 <!-- ===== ROLE SELECT ===== -->
 <div class="screen" id="screen-role-select">
-  <div class="stager-select-screen">
-    <div style="max-width:600px;width:100%;">
-      <div style="text-align:center;margin-bottom:8px;">
-        <div style="font-size:13px;color:var(--text3);font-family:var(--font-mono);" id="role-session-name-display">Sesión</div>
-        <h2 style="font-family:var(--font-display);font-size:36px;letter-spacing:2px;margin-top:4px;">ELEGIR ROL</h2>
-        <p style="color:var(--text2);font-size:14px;margin-top:8px;">¿Cómo quieres participar en esta sesión?</p>
-      </div>
-      <div class="role-select-grid">
-        <div class="role-card" onclick="enterOrganizadorMode()">
-          <div class="role-icon">🎛️</div>
-          <div class="role-name">ORGANIZADOR</div>
-          <div class="role-desc">Controla los timers, gestiona el flujo y envía mensajes a los presentadores</div>
-        </div>
-        <div class="role-card" id="stager-role-card" onclick="openStagerDeviceSelect()">
-          <div class="role-icon">🎤</div>
-          <div class="role-name">STAGER</div>
-          <div class="role-desc">Vista del presentador: ve tu tiempo restante y los mensajes del organizador</div>
-        </div>
-      </div>
-      <div style="text-align:center;margin-top:24px;">
-        <button class="btn btn-ghost" onclick="showPage('page-sessions');showScreen('screen-app')">← Volver a Sesiones</button>
-      </div>
-    </div>
-  </div>
+ <div class="stager-select-screen">
+ <div style="max-width:600px;width:100%;">
+ <div style="text-align:center;margin-bottom:8px;">
+ <div style="font-size:13px;color:var(--text3);font-family:var(--font-mono);" id="role-session-name-display">Sesión</div>
+ <h2 style="font-family:var(--font-display);font-size:36px;letter-spacing:2px;margin-top:4px;">ELEGIR ROL</h2>
+ <p style="color:var(--text2);font-size:14px;margin-top:8px;">¿Cómo quieres participar en esta sesión?</p>
+ </div>
+ <div class="role-select-grid">
+ <div class="role-card" onclick="enterOrganizadorMode()">
+ <div class="role-icon"></div>
+ <div class="role-name">ORGANIZADOR</div>
+ <div class="role-desc">Controla los timers, gestiona el flujo y envía mensajes a los presentadores</div>
+ </div>
+ <div class="role-card" id="stager-role-card" onclick="openStagerDeviceSelect()">
+ <div class="role-icon"></div>
+ <div class="role-name">STAGER</div>
+ <div class="role-desc">Vista del presentador: ve tu tiempo restante y los mensajes del organizador</div>
+ </div>
+ </div>
+ <div style="text-align:center;margin-top:24px;">
+ <button class="btn btn-ghost" onclick="showPage('page-sessions');showScreen('screen-app')">← Volver a Sesiones</button>
+ </div>
+ </div>
+ </div>
 </div>
 
 <!-- ===== ORGANIZADOR VIEW ===== -->
 <div class="screen" id="screen-organizador">
-  <div class="runner-layout">
-    <div class="runner-main" id="runner-main">
-      <!-- dynamic -->
-    </div>
-    <div class="runner-sidebar">
-      <div class="runner-sidebar-header" style="display:flex;align-items:center;justify-content:space-between;">
-        <span>Lista de Timers</span>
-        <button class="btn btn-ghost btn-sm" onclick="backFromOrganizador()">✕ Salir</button>
-      </div>
-      <div class="runner-timer-list" id="runner-timer-list"></div>
-      <div class="msg-area">
-        <div class="runner-sidebar-header" style="border:none;padding:0 0 8px 0;">Enviar Mensaje</div>
-        <div class="msg-device-tabs" id="msg-device-tabs"></div>
-        <div style="display:flex;gap:6px;">
-          <input type="text" id="msg-input" class="form-input" placeholder="Escribe un mensaje..." style="flex:1;" onkeydown="if(event.key==='Enter')sendMessage()">
-          <button class="btn btn-primary btn-sm" onclick="sendMessage()">↑</button>
-        </div>
-      </div>
-    </div>
-  </div>
+ <div class="runner-layout">
+ <div class="runner-main" id="runner-main">
+ <!-- dynamic -->
+ </div>
+ <div class="runner-sidebar">
+ <div class="runner-sidebar-header" style="display:flex;align-items:center;justify-content:space-between;">
+ <span>Lista de Timers</span>
+ <button class="btn btn-ghost btn-sm" onclick="backFromOrganizador()"> Salir</button>
+ </div>
+ <div class="runner-timer-list" id="runner-timer-list"></div>
+ <div class="msg-area">
+ <div class="runner-sidebar-header" style="border:none;padding:0 0 8px 0;">Enviar Mensaje</div>
+ <div class="msg-device-tabs" id="msg-device-tabs"></div>
+ <div style="display:flex;gap:6px;">
+ <input type="text" id="msg-input" class="form-input" placeholder="Escribe un mensaje..." style="flex:1;" onkeydown="if(event.key==='Enter')sendMessage()">
+ <button class="btn btn-primary btn-sm" onclick="sendMessage()">↑</button>
+ </div>
+ </div>
+ </div>
+ </div>
 </div>
 
 <script>
@@ -1484,650 +1558,651 @@ let stagerChannel = null;
 // INIT
 // ============================================================
 async function init() {
-  const { data: { session } } = await sb.auth.getSession();
-  hideLoading();
-  if (session) {
-    currentUser = session.user;
-    await loadUserData();
-    showScreen('screen-app');
-    showPage('page-dashboard');
-    await loadDashboard();
-  } else {
-    showScreen('screen-landing');
-  }
+ const { data: { session } } = await sb.auth.getSession();
+ hideLoading();
+ if (session) {
+ currentUser = session.user;
+ await loadUserData();
+ showScreen('screen-app');
+ showPage('page-dashboard');
+ await loadDashboard();
+ } else {
+ showScreen('screen-landing');
+ }
 }
 
 // ============================================================
 // SCREEN / PAGE MANAGEMENT
 // ============================================================
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
 }
 
 function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const map = {
-    'page-dashboard': 0,
-    'page-sessions': 1,
-    'page-session-detail': 1,
-    'page-devices': 2,
-    'page-account': 3
-  };
-  const items = document.querySelectorAll('.nav-item');
-  if (map[id] !== undefined && items[map[id]]) items[map[id]].classList.add('active');
-  
-  if (id === 'page-sessions') loadSessionsList();
-  if (id === 'page-devices') loadDevicesList();
-  if (id === 'page-account') loadAccountPage();
-  if (id === 'page-dashboard') loadDashboard();
+ document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+ const map = {
+ 'page-dashboard': 0,
+ 'page-sessions': 1,
+ 'page-session-detail': 1,
+ 'page-devices': 2,
+ 'page-account': 3
+ };
+ const items = document.querySelectorAll('.nav-item');
+ if (map[id] !== undefined && items[map[id]]) items[map[id]].classList.add('active');
+ 
+ if (id === 'page-sessions') loadSessionsList();
+ if (id === 'page-devices') loadDevicesList();
+ if (id === 'page-account') loadAccountPage();
+ if (id === 'page-dashboard') loadDashboard();
 }
 
 function hideLoading() {
-  document.getElementById('loading-overlay').classList.add('hidden');
+ document.getElementById('loading-overlay').classList.add('hidden');
 }
 
 // ============================================================
 // AUTH
 // ============================================================
 function showAuth(tab) {
-  showScreen('screen-auth');
-  switchAuthTab(tab);
+ showScreen('screen-auth');
+ switchAuthTab(tab);
 }
 
 function switchAuthTab(tab) {
-  document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
-  document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
-  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
-  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+ document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
+ document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
+ document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+ document.getElementById('tab-register').classList.toggle('active', tab === 'register');
 }
 
 async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  const errEl = document.getElementById('login-error');
-  const btn = document.getElementById('btn-login');
-  errEl.style.display = 'none';
-  if (!email || !password) { showError(errEl, 'Completa todos los campos'); return; }
-  btn.disabled = true;
-  document.getElementById('login-btn-text').textContent = 'Entrando...';
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
-  btn.disabled = false;
-  document.getElementById('login-btn-text').textContent = 'Entrar';
-  if (error) { showError(errEl, error.message); return; }
-  currentUser = data.user;
-  await loadUserData();
-  showScreen('screen-app');
-  showPage('page-dashboard');
-  await loadDashboard();
-  toast('¡Bienvenido de vuelta!', 'success');
+ const email = document.getElementById('login-email').value.trim();
+ const password = document.getElementById('login-password').value;
+ const errEl = document.getElementById('login-error');
+ const btn = document.getElementById('btn-login');
+ errEl.style.display = 'none';
+ if (!email || !password) { showError(errEl, 'Completa todos los campos'); return; }
+ btn.disabled = true;
+ document.getElementById('login-btn-text').textContent = 'Entrando...';
+ const { data, error } = await sb.auth.signInWithPassword({ email, password });
+ btn.disabled = false;
+ document.getElementById('login-btn-text').textContent = 'Entrar';
+ if (error) { showError(errEl, error.message); return; }
+ currentUser = data.user;
+ await loadUserData();
+ showScreen('screen-app');
+ showPage('page-dashboard');
+ await loadDashboard();
+ toast('Bienvenido de vuelta!', 'success');
 }
 
 async function doRegister() {
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const password = document.getElementById('reg-password').value;
-  const errEl = document.getElementById('register-error');
-  errEl.style.display = 'none';
-  if (!name || !email || !password) { showError(errEl, 'Completa todos los campos'); return; }
-  if (password.length < 6) { showError(errEl, 'La contraseña debe tener al menos 6 caracteres'); return; }
-  const btn = document.getElementById('btn-register');
-  btn.disabled = true;
-  document.getElementById('register-btn-text').textContent = 'Creando cuenta...';
-  const { data, error } = await sb.auth.signUp({ email, password, options: { data: { full_name: name } } });
-  btn.disabled = false;
-  document.getElementById('register-btn-text').textContent = 'Crear Cuenta';
-  if (error) { showError(errEl, error.message); return; }
-  currentUser = data.user;
-  // Upsert profile
-  await sb.from('profiles').upsert({ id: currentUser.id, full_name: name, email });
-  await loadUserData();
-  showScreen('screen-app');
-  showPage('page-dashboard');
-  toast('¡Cuenta creada exitosamente!', 'success');
+ const name = document.getElementById('reg-name').value.trim();
+ const congregation = document.getElementById('reg-congregation').value.trim();
+ const email = document.getElementById('reg-email').value.trim();
+ const password = document.getElementById('reg-password').value;
+ const errEl = document.getElementById('register-error');
+ errEl.style.display = 'none';
+ if (!name || !congregation || !email || !password) { showError(errEl, 'Completa todos los campos'); return; }
+ if (password.length < 6) { showError(errEl, 'La contraseña debe tener al menos 6 caracteres'); return; }
+ const btn = document.getElementById('btn-register');
+ btn.disabled = true;
+ document.getElementById('register-btn-text').textContent = 'Creando cuenta...';
+ const { data, error } = await sb.auth.signUp({ email, password, options: { data: { full_name: name, congregation } } });
+ btn.disabled = false;
+ document.getElementById('register-btn-text').textContent = 'Crear Cuenta';
+ if (error) { showError(errEl, error.message); return; }
+ currentUser = data.user;
+ // Upsert profile
+ await sb.from('profiles').upsert({ id: currentUser.id, full_name: name, congregation, email });
+ await loadUserData();
+ showScreen('screen-app');
+ showPage('page-dashboard');
+ toast('Cuenta creada exitosamente!', 'success');
 }
 
 async function doLogout() {
-  await sb.auth.signOut();
-  currentUser = null; currentProfile = null; sessions = []; devices = [];
-  if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
-  showScreen('screen-landing');
-  toast('Sesión cerrada', 'info');
+ await sb.auth.signOut();
+ currentUser = null; currentProfile = null; sessions = []; devices = [];
+ if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+ showScreen('screen-landing');
+ toast('Sesión cerrada', 'info');
 }
 
 function showError(el, msg) {
-  el.textContent = msg;
-  el.style.display = 'block';
+ el.textContent = msg;
+ el.style.display = 'block';
 }
 
 // ============================================================
 // USER DATA
 // ============================================================
 async function loadUserData() {
-  // Try to load profile
-  const { data: prof } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
-  if (prof) {
-    currentProfile = prof;
-  } else {
-    // Auto-create
-    const meta = currentUser.user_metadata || {};
-    const newProf = { id: currentUser.id, full_name: meta.full_name || currentUser.email.split('@')[0], email: currentUser.email };
-    await sb.from('profiles').upsert(newProf);
-    currentProfile = newProf;
-  }
-  updateSidebar();
+ // Try to load profile
+ const { data: prof } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+ if (prof) {
+ currentProfile = prof;
+ } else {
+ // Auto-create
+ const meta = currentUser.user_metadata || {};
+ const newProf = { id: currentUser.id, full_name: meta.full_name || currentUser.email.split('@')[0], email: currentUser.email };
+ await sb.from('profiles').upsert(newProf);
+ currentProfile = newProf;
+ }
+ updateSidebar();
 }
 
 function updateSidebar() {
-  if (!currentProfile) return;
-  const name = currentProfile.full_name || 'Usuario';
-  document.getElementById('sidebar-name').textContent = name;
-  document.getElementById('sidebar-email').textContent = currentProfile.email || '';
-  document.getElementById('sidebar-avatar').textContent = name.charAt(0).toUpperCase();
+ if (!currentProfile) return;
+ const name = currentProfile.full_name || 'Usuario';
+ document.getElementById('sidebar-name').textContent = name;
+ document.getElementById('sidebar-email').textContent = currentProfile.email || '';
+ document.getElementById('sidebar-avatar').textContent = name.charAt(0).toUpperCase();
 }
 
 // ============================================================
 // DATABASE HELPERS - ensure tables exist via API
 // ============================================================
 async function ensureTables() {
-  // We'll just try to use the tables; if they don't exist, we show an error
+ // We'll just try to use the tables; if they don't exist, we show an error
 }
 
 // ============================================================
 // DASHBOARD
 // ============================================================
 async function loadDashboard() {
-  const [sessRes, devRes] = await Promise.all([
-    sb.from('sessions').select('*').eq('user_id', currentUser.id).order('created_at', {ascending:false}),
-    sb.from('devices').select('*').eq('user_id', currentUser.id)
-  ]);
-  sessions = sessRes.data || [];
-  devices = devRes.data || [];
+ const [sessRes, devRes] = await Promise.all([
+ sb.from('sessions').select('*').eq('user_id', currentUser.id).order('created_at', {ascending:false}),
+ sb.from('devices').select('*').eq('user_id', currentUser.id)
+ ]);
+ sessions = sessRes.data || [];
+ devices = devRes.data || [];
 
-  // Count timers
-  let timerCount = 0;
-  if (sessions.length > 0) {
-    const { count } = await sb.from('timers').select('*', {count:'exact',head:true}).in('session_id', sessions.map(s=>s.id));
-    timerCount = count || 0;
-  }
+ // Count timers
+ let timerCount = 0;
+ if (sessions.length > 0) {
+ const { count } = await sb.from('timers').select('*', {count:'exact',head:true}).in('session_id', sessions.map(s=>s.id));
+ timerCount = count || 0;
+ }
 
-  document.getElementById('stat-sessions').textContent = sessions.length;
-  document.getElementById('stat-timers').textContent = timerCount;
-  document.getElementById('stat-devices').textContent = devices.length;
+ document.getElementById('stat-sessions').textContent = sessions.length;
+ document.getElementById('stat-timers').textContent = timerCount;
+ document.getElementById('stat-devices').textContent = devices.length;
 
-  const container = document.getElementById('dashboard-recent-sessions');
-  const recent = sessions.slice(0, 6);
-  if (recent.length === 0) {
-    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">📋</div><div class="empty-state-text">No hay sesiones aún</div><div class="empty-state-sub">Crea tu primera sesión para empezar</div></div>`;
-  } else {
-    container.innerHTML = recent.map(s => sessionCardHTML(s)).join('');
-  }
+ const container = document.getElementById('dashboard-recent-sessions');
+ const recent = sessions.slice(0, 6);
+ if (recent.length === 0) {
+ container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon"></div><div class="empty-state-text">No hay sesiones aún</div><div class="empty-state-sub">Crea tu primera sesión para empezar</div></div>`;
+ } else {
+ container.innerHTML = recent.map(s => sessionCardHTML(s)).join('');
+ }
 }
 
 function sessionCardHTML(s) {
-  const date = new Date(s.created_at).toLocaleDateString('es-ES', {day:'2-digit',month:'short',year:'numeric'});
-  return `
-    <div class="session-card" onclick="openSession('${s.id}')">
-      <div class="session-card-name">${esc(s.name)}</div>
-      <div class="session-card-desc">${esc(s.description || 'Sin descripción')}</div>
-      <div class="session-card-meta">
-        <span>📅 ${date}</span>
-        <span id="timer-count-${s.id}">⏱ cargando...</span>
-      </div>
-    </div>
-  `;
+ const date = new Date(s.created_at).toLocaleDateString('es-ES', {day:'2-digit',month:'short',year:'numeric'});
+ return `
+ <div class="session-card" onclick="openSession('${s.id}')">
+ <div class="session-card-name">${esc(s.name)}</div>
+ <div class="session-card-desc">${esc(s.description || 'Sin descripción')}</div>
+ <div class="session-card-meta">
+ <span> ${date}</span>
+ <span id="timer-count-${s.id}"> cargando...</span>
+ </div>
+ </div>
+ `;
 }
 
 // ============================================================
 // SESSIONS
 // ============================================================
 async function loadSessionsList() {
-  const { data, error } = await sb.from('sessions').select('*').eq('user_id', currentUser.id).order('created_at', {ascending:false});
-  sessions = data || [];
-  const container = document.getElementById('sessions-list');
-  if (sessions.length === 0) {
-    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">📋</div><div class="empty-state-text">No hay sesiones aún</div><div class="empty-state-sub">Crea tu primera sesión</div></div>`;
-  } else {
-    container.innerHTML = sessions.map(s => sessionCardHTML(s)).join('');
-  }
-  // Load timer counts
-  for (const s of sessions) {
-    const { count } = await sb.from('timers').select('*', {count:'exact',head:true}).eq('session_id', s.id);
-    const el = document.getElementById(`timer-count-${s.id}`);
-    if (el) el.textContent = `⏱ ${count||0} timer${count!==1?'s':''}`;
-  }
+ const { data, error } = await sb.from('sessions').select('*').eq('user_id', currentUser.id).order('created_at', {ascending:false});
+ sessions = data || [];
+ const container = document.getElementById('sessions-list');
+ if (sessions.length === 0) {
+ container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon"></div><div class="empty-state-text">No hay sesiones aún</div><div class="empty-state-sub">Crea tu primera sesión</div></div>`;
+ } else {
+ container.innerHTML = sessions.map(s => sessionCardHTML(s)).join('');
+ }
+ // Load timer counts
+ for (const s of sessions) {
+ const { count } = await sb.from('timers').select('*', {count:'exact',head:true}).eq('session_id', s.id);
+ const el = document.getElementById(`timer-count-${s.id}`);
+ if (el) el.textContent = ` ${count||0} timer${count!==1?'s':''}`;
+ }
 }
 
 function openCreateSession() {
-  showModal(`
-    <div class="modal-title">✨ Nueva Sesión</div>
-    <div class="form-group">
-      <label class="form-label">Nombre de la Sesión</label>
-      <input type="text" id="new-session-name" class="form-input" placeholder="Ej: Conferencia Tech 2025">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Descripción (opcional)</label>
-      <textarea id="new-session-desc" class="form-input" placeholder="¿De qué trata esta sesión?"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Fecha del Evento</label>
-      <input type="date" id="new-session-date" class="form-input">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="createSession()">Crear Sesión</button>
-    </div>
-  `);
+ showModal(`
+ <div class="modal-title">Nueva Sesión</div>
+ <div class="form-group">
+ <label class="form-label">Nombre de la Sesión</label>
+ <input type="text" id="new-session-name" class="form-input" placeholder="Ej: Conferencia Tech 2025">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Descripción (opcional)</label>
+ <textarea id="new-session-desc" class="form-input" placeholder="¿De qué trata esta sesión?"></textarea>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Fecha del Evento</label>
+ <input type="date" id="new-session-date" class="form-input">
+ </div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+ <button class="btn btn-primary" onclick="createSession()">Crear Sesión</button>
+ </div>
+ `);
 }
 
 async function createSession() {
-  const name = document.getElementById('new-session-name').value.trim();
-  const desc = document.getElementById('new-session-desc').value.trim();
-  const date = document.getElementById('new-session-date').value;
-  if (!name) { toast('Ingresa un nombre para la sesión', 'error'); return; }
-  const { data, error } = await sb.from('sessions').insert({
-    user_id: currentUser.id, name, description: desc, event_date: date || null, status: 'draft'
-  }).select().single();
-  if (error) { toast('Error al crear sesión: ' + error.message, 'error'); return; }
-  closeModal();
-  toast('Sesión creada', 'success');
-  await openSession(data.id);
+ const name = document.getElementById('new-session-name').value.trim();
+ const desc = document.getElementById('new-session-desc').value.trim();
+ const date = document.getElementById('new-session-date').value;
+ if (!name) { toast('Ingresa un nombre para la sesión', 'error'); return; }
+ const { data, error } = await sb.from('sessions').insert({
+ user_id: currentUser.id, name, description: desc, event_date: date || null, status: 'draft'
+ }).select().single();
+ if (error) { toast('Error al crear sesión: ' + error.message, 'error'); return; }
+ closeModal();
+ toast('Sesión creada', 'success');
+ await openSession(data.id);
 }
 
 async function openSession(sessionId) {
-  const { data: sess } = await sb.from('sessions').select('*').eq('id', sessionId).single();
-  if (!sess) { toast('Sesión no encontrada', 'error'); return; }
-  currentSession = sess;
-  const { data: timers } = await sb.from('timers').select('*').eq('session_id', sessionId).order('order_index');
-  currentTimers = timers || [];
-  renderSessionDetail();
-  showPage('page-session-detail');
-  showScreen('screen-app');
+ const { data: sess } = await sb.from('sessions').select('*').eq('id', sessionId).single();
+ if (!sess) { toast('Sesión no encontrada', 'error'); return; }
+ currentSession = sess;
+ const { data: timers } = await sb.from('timers').select('*').eq('session_id', sessionId).order('order_index');
+ currentTimers = timers || [];
+ renderSessionDetail();
+ showPage('page-session-detail');
+ showScreen('screen-app');
 }
 
 function renderSessionDetail() {
-  const s = currentSession;
-  const date = s.event_date ? new Date(s.event_date).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : 'Sin fecha';
-  const body = document.getElementById('session-detail-body');
-  body.innerHTML = `
-    <div class="page-header">
-      <div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-          <button class="btn btn-ghost btn-sm" onclick="showPage('page-sessions')">← Sesiones</button>
-          <span class="badge badge-gray">${esc(date)}</span>
-          <span class="badge ${s.status==='live'?'badge-green':s.status==='draft'?'badge-gray':'badge-blue'}">${s.status==='live'?'🔴 EN VIVO':s.status==='draft'?'Borrador':'Finalizada'}</span>
-        </div>
-        <h1 class="page-title">${esc(s.name)}</h1>
-        <p class="page-sub">${esc(s.description||'')}</p>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-secondary" onclick="editSession('${s.id}')">✏️ Editar</button>
-        <button class="btn btn-primary" onclick="openRoleSelect('${s.id}')">▶ Entrar a Sesión</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteSession('${s.id}')">🗑</button>
-      </div>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h2 class="card-title">Timers (${currentTimers.length})</h2>
-      <button class="btn btn-secondary btn-sm" onclick="openAddTimer()">+ Agregar Timer</button>
-    </div>
-    <div class="timers-list" id="timers-list">
-      ${currentTimers.length===0?`<div class="empty-state"><div class="empty-state-icon">⏱</div><div class="empty-state-text">No hay timers aún</div><div class="empty-state-sub">Agrega el primer timer para esta sesión</div></div>`:currentTimers.map((t,i)=>timerRowHTML(t,i)).join('')}
-    </div>
-  `;
+ const s = currentSession;
+ const date = s.event_date ? new Date(s.event_date).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : 'Sin fecha';
+ const body = document.getElementById('session-detail-body');
+ body.innerHTML = `
+ <div class="page-header">
+ <div>
+ <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+ <button class="btn btn-ghost btn-sm" onclick="showPage('page-sessions')">← Sesiones</button>
+ <span class="badge badge-gray">${esc(date)}</span>
+ <span class="badge ${s.status==='live'?'badge-green':s.status==='draft'?'badge-gray':'badge-blue'}">${s.status==='live'?'EN VIVO':s.status==='draft'?'Borrador':'Finalizada'}</span>
+ </div>
+ <h1 class="page-title">${esc(s.name)}</h1>
+ <p class="page-sub">${esc(s.description||'')}</p>
+ </div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;">
+ <button class="btn btn-secondary" onclick="editSession('${s.id}')">Editar</button>
+ <button class="btn btn-primary" onclick="openRoleSelect('${s.id}')"> Entrar a Sesión</button>
+ <button class="btn btn-danger btn-sm" onclick="deleteSession('${s.id}')"></button>
+ </div>
+ </div>
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+ <h2 class="card-title">Timers (${currentTimers.length})</h2>
+ <button class="btn btn-secondary btn-sm" onclick="openAddTimer()">+ Agregar Timer</button>
+ </div>
+ <div class="timers-list" id="timers-list">
+ ${currentTimers.length===0?`<div class="empty-state"><div class="empty-state-icon"></div><div class="empty-state-text">No hay timers aún</div><div class="empty-state-sub">Agrega el primer timer para esta sesión</div></div>`:currentTimers.map((t,i)=>timerRowHTML(t,i)).join('')}
+ </div>
+ `;
 }
 
 function timerRowHTML(t, i) {
-  const dur = formatDuration(t.duration_seconds);
-  const colors = ['#e8ff47','#4dc4ff','#4fffb0','#ff6b35','#ff4f6a'];
-  const color = t.color || colors[i % colors.length];
-  return `
-    <div class="timer-row" id="timer-row-${t.id}">
-      <div class="timer-color-bar" style="background:${color};min-height:48px;"></div>
-      <div class="timer-order">${i+1}</div>
-      <div class="timer-info">
-        <div class="timer-name">${esc(t.name)}</div>
-        <div class="timer-speaker">${esc(t.speaker||'')}</div>
-        ${t.notes?`<div style="font-size:11px;color:var(--text3);margin-top:2px;">${esc(t.notes)}</div>`:''}
-      </div>
-      <div class="timer-duration">${dur}</div>
-      <div class="timer-actions">
-        <button class="btn btn-ghost btn-icon btn-sm" onclick="editTimer('${t.id}')" title="Editar">✏️</button>
-        <button class="btn btn-danger btn-icon btn-sm" onclick="deleteTimer('${t.id}')" title="Eliminar">🗑</button>
-      </div>
-    </div>
-  `;
+ const dur = formatDuration(t.duration_seconds);
+ const colors = ['#e8ff47','#4dc4ff','#4fffb0','#ff6b35','#ff4f6a'];
+ const color = t.color || colors[i % colors.length];
+ return `
+ <div class="timer-row" id="timer-row-${t.id}">
+ <div class="timer-color-bar" style="background:${color};min-height:48px;"></div>
+ <div class="timer-order">${i+1}</div>
+ <div class="timer-info">
+ <div class="timer-name">${esc(t.name)}</div>
+ <div class="timer-speaker">${esc(t.speaker||'')}</div>
+ ${t.notes?`<div style="font-size:11px;color:var(--text3);margin-top:2px;">${esc(t.notes)}</div>`:''}
+ </div>
+ <div class="timer-duration">${dur}</div>
+ <div class="timer-actions">
+ <button class="btn btn-ghost btn-icon btn-sm" onclick="editTimer('${t.id}')" title="Editar">Editar</button>
+ <button class="btn btn-danger btn-icon btn-sm" onclick="deleteTimer('${t.id}')" title="Eliminar">Borrar</button>
+ </div>
+ </div>
+ `;
 }
 
 function openAddTimer() {
-  const nextOrder = currentTimers.length;
-  showModal(`
-    <div class="modal-title">⏱ Nuevo Timer</div>
-    <div class="form-group">
-      <label class="form-label">Nombre / Tema</label>
-      <input type="text" id="timer-name" class="form-input" placeholder="Ej: Keynote de Apertura">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Ponente / Speaker</label>
-      <input type="text" id="timer-speaker" class="form-input" placeholder="Nombre del presentador">
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-      <div class="form-group">
-        <label class="form-label">Horas</label>
-        <input type="number" id="timer-hours" class="form-input" value="0" min="0" max="23">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Minutos</label>
-        <input type="number" id="timer-minutes" class="form-input" value="20" min="0" max="59">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Segundos</label>
-        <input type="number" id="timer-seconds" class="form-input" value="0" min="0" max="59">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Notas (visibles para el organizador)</label>
-      <input type="text" id="timer-notes" class="form-input" placeholder="Nota interna...">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Color</label>
-      <input type="color" id="timer-color" value="#e8ff47">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveNewTimer()">Agregar Timer</button>
-    </div>
-  `);
+ const nextOrder = currentTimers.length;
+ showModal(`
+ <div class="modal-title">Nuevo Timer</div>
+ <div class="form-group">
+ <label class="form-label">Nombre / Tema</label>
+ <input type="text" id="timer-name" class="form-input" placeholder="Ej: Keynote de Apertura">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Ponente / Speaker</label>
+ <input type="text" id="timer-speaker" class="form-input" placeholder="Nombre del presentador">
+ </div>
+ <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+ <div class="form-group">
+ <label class="form-label">Horas</label>
+ <input type="number" id="timer-hours" class="form-input" value="0" min="0" max="23">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Minutos</label>
+ <input type="number" id="timer-minutes" class="form-input" value="20" min="0" max="59">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Segundos</label>
+ <input type="number" id="timer-seconds" class="form-input" value="0" min="0" max="59">
+ </div>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Notas (visibles para el organizador)</label>
+ <input type="text" id="timer-notes" class="form-input" placeholder="Nota interna...">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Color</label>
+ <input type="color" id="timer-color" value="#e8ff47">
+ </div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+ <button class="btn btn-primary" onclick="saveNewTimer()">Agregar Timer</button>
+ </div>
+ `);
 }
 
 async function saveNewTimer() {
-  const name = document.getElementById('timer-name').value.trim();
-  if (!name) { toast('Ingresa un nombre para el timer', 'error'); return; }
-  const h = parseInt(document.getElementById('timer-hours').value)||0;
-  const m = parseInt(document.getElementById('timer-minutes').value)||0;
-  const sec = parseInt(document.getElementById('timer-seconds').value)||0;
-  const total = h*3600+m*60+sec;
-  if (total<=0) { toast('La duración debe ser mayor a 0', 'error'); return; }
-  const color = document.getElementById('timer-color').value;
-  const speaker = document.getElementById('timer-speaker').value.trim();
-  const notes = document.getElementById('timer-notes').value.trim();
-  const { data, error } = await sb.from('timers').insert({
-    session_id: currentSession.id,
-    name, speaker, notes, color,
-    duration_seconds: total,
-    order_index: currentTimers.length,
-    status: 'pending'
-  }).select().single();
-  if (error) { toast('Error: ' + error.message, 'error'); return; }
-  currentTimers.push(data);
-  closeModal();
-  toast('Timer agregado', 'success');
-  renderSessionDetail();
+ const name = document.getElementById('timer-name').value.trim();
+ if (!name) { toast('Ingresa un nombre para el timer', 'error'); return; }
+ const h = parseInt(document.getElementById('timer-hours').value)||0;
+ const m = parseInt(document.getElementById('timer-minutes').value)||0;
+ const sec = parseInt(document.getElementById('timer-seconds').value)||0;
+ const total = h*3600+m*60+sec;
+ if (total<=0) { toast('La duración debe ser mayor a 0', 'error'); return; }
+ const color = document.getElementById('timer-color').value;
+ const speaker = document.getElementById('timer-speaker').value.trim();
+ const notes = document.getElementById('timer-notes').value.trim();
+ const { data, error } = await sb.from('timers').insert({
+ session_id: currentSession.id,
+ name, speaker, notes, color,
+ duration_seconds: total,
+ order_index: currentTimers.length,
+ status: 'pending'
+ }).select().single();
+ if (error) { toast('Error: ' + error.message, 'error'); return; }
+ currentTimers.push(data);
+ closeModal();
+ toast('Timer agregado', 'success');
+ renderSessionDetail();
 }
 
 async function editTimer(timerId) {
-  const t = currentTimers.find(x=>x.id===timerId);
-  if (!t) return;
-  const h = Math.floor(t.duration_seconds/3600);
-  const m = Math.floor((t.duration_seconds%3600)/60);
-  const s = t.duration_seconds%60;
-  showModal(`
-    <div class="modal-title">✏️ Editar Timer</div>
-    <div class="form-group">
-      <label class="form-label">Nombre / Tema</label>
-      <input type="text" id="edit-timer-name" class="form-input" value="${esc(t.name)}">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Ponente</label>
-      <input type="text" id="edit-timer-speaker" class="form-input" value="${esc(t.speaker||'')}">
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-      <div class="form-group">
-        <label class="form-label">Horas</label>
-        <input type="number" id="edit-timer-h" class="form-input" value="${h}" min="0" max="23">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Minutos</label>
-        <input type="number" id="edit-timer-m" class="form-input" value="${m}" min="0" max="59">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Segundos</label>
-        <input type="number" id="edit-timer-s" class="form-input" value="${s}" min="0" max="59">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Notas</label>
-      <input type="text" id="edit-timer-notes" class="form-input" value="${esc(t.notes||'')}">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Color</label>
-      <input type="color" id="edit-timer-color" value="${t.color||'#e8ff47'}">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="updateTimer('${timerId}')">Guardar</button>
-    </div>
-  `);
+ const t = currentTimers.find(x=>x.id===timerId);
+ if (!t) return;
+ const h = Math.floor(t.duration_seconds/3600);
+ const m = Math.floor((t.duration_seconds%3600)/60);
+ const s = t.duration_seconds%60;
+ showModal(`
+ <div class="modal-title">Editar Timer</div>
+ <div class="form-group">
+ <label class="form-label">Nombre / Tema</label>
+ <input type="text" id="edit-timer-name" class="form-input" value="${esc(t.name)}">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Ponente</label>
+ <input type="text" id="edit-timer-speaker" class="form-input" value="${esc(t.speaker||'')}">
+ </div>
+ <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+ <div class="form-group">
+ <label class="form-label">Horas</label>
+ <input type="number" id="edit-timer-h" class="form-input" value="${h}" min="0" max="23">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Minutos</label>
+ <input type="number" id="edit-timer-m" class="form-input" value="${m}" min="0" max="59">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Segundos</label>
+ <input type="number" id="edit-timer-s" class="form-input" value="${s}" min="0" max="59">
+ </div>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Notas</label>
+ <input type="text" id="edit-timer-notes" class="form-input" value="${esc(t.notes||'')}">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Color</label>
+ <input type="color" id="edit-timer-color" value="${t.color||'#e8ff47'}">
+ </div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+ <button class="btn btn-primary" onclick="updateTimer('${timerId}')">Guardar</button>
+ </div>
+ `);
 }
 
 async function updateTimer(timerId) {
-  const name = document.getElementById('edit-timer-name').value.trim();
-  const h = parseInt(document.getElementById('edit-timer-h').value)||0;
-  const m = parseInt(document.getElementById('edit-timer-m').value)||0;
-  const s = parseInt(document.getElementById('edit-timer-s').value)||0;
-  const total = h*3600+m*60+s;
-  if (!name||total<=0) { toast('Datos inválidos', 'error'); return; }
-  const color = document.getElementById('edit-timer-color').value;
-  const speaker = document.getElementById('edit-timer-speaker').value.trim();
-  const notes = document.getElementById('edit-timer-notes').value.trim();
-  const { error } = await sb.from('timers').update({ name, speaker, notes, color, duration_seconds: total }).eq('id', timerId);
-  if (error) { toast('Error: '+error.message, 'error'); return; }
-  const idx = currentTimers.findIndex(x=>x.id===timerId);
-  if (idx>=0) Object.assign(currentTimers[idx], {name,speaker,notes,color,duration_seconds:total});
-  closeModal();
-  toast('Timer actualizado', 'success');
-  renderSessionDetail();
+ const name = document.getElementById('edit-timer-name').value.trim();
+ const h = parseInt(document.getElementById('edit-timer-h').value)||0;
+ const m = parseInt(document.getElementById('edit-timer-m').value)||0;
+ const s = parseInt(document.getElementById('edit-timer-s').value)||0;
+ const total = h*3600+m*60+s;
+ if (!name||total<=0) { toast('Datos inválidos', 'error'); return; }
+ const color = document.getElementById('edit-timer-color').value;
+ const speaker = document.getElementById('edit-timer-speaker').value.trim();
+ const notes = document.getElementById('edit-timer-notes').value.trim();
+ const { error } = await sb.from('timers').update({ name, speaker, notes, color, duration_seconds: total }).eq('id', timerId);
+ if (error) { toast('Error: '+error.message, 'error'); return; }
+ const idx = currentTimers.findIndex(x=>x.id===timerId);
+ if (idx>=0) Object.assign(currentTimers[idx], {name,speaker,notes,color,duration_seconds:total});
+ closeModal();
+ toast('Timer actualizado', 'success');
+ renderSessionDetail();
 }
 
 async function deleteTimer(timerId) {
-  if (!confirm('¿Eliminar este timer?')) return;
-  const { error } = await sb.from('timers').delete().eq('id', timerId);
-  if (error) { toast('Error: '+error.message, 'error'); return; }
-  currentTimers = currentTimers.filter(t=>t.id!==timerId);
-  toast('Timer eliminado', 'success');
-  renderSessionDetail();
+ if (!confirm('¿Eliminar este timer?')) return;
+ const { error } = await sb.from('timers').delete().eq('id', timerId);
+ if (error) { toast('Error: '+error.message, 'error'); return; }
+ currentTimers = currentTimers.filter(t=>t.id!==timerId);
+ toast('Timer eliminado', 'success');
+ renderSessionDetail();
 }
 
 function editSession(sessionId) {
-  const s = currentSession;
-  showModal(`
-    <div class="modal-title">✏️ Editar Sesión</div>
-    <div class="form-group">
-      <label class="form-label">Nombre</label>
-      <input type="text" id="edit-session-name" class="form-input" value="${esc(s.name)}">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Descripción</label>
-      <textarea id="edit-session-desc" class="form-input">${esc(s.description||'')}</textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Fecha</label>
-      <input type="date" id="edit-session-date" class="form-input" value="${s.event_date||''}">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveEditSession('${sessionId}')">Guardar</button>
-    </div>
-  `);
+ const s = currentSession;
+ showModal(`
+ <div class="modal-title">Editar Sesión</div>
+ <div class="form-group">
+ <label class="form-label">Nombre</label>
+ <input type="text" id="edit-session-name" class="form-input" value="${esc(s.name)}">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Descripción</label>
+ <textarea id="edit-session-desc" class="form-input">${esc(s.description||'')}</textarea>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Fecha</label>
+ <input type="date" id="edit-session-date" class="form-input" value="${s.event_date||''}">
+ </div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+ <button class="btn btn-primary" onclick="saveEditSession('${sessionId}')">Guardar</button>
+ </div>
+ `);
 }
 
 async function saveEditSession(id) {
-  const name = document.getElementById('edit-session-name').value.trim();
-  const desc = document.getElementById('edit-session-desc').value.trim();
-  const date = document.getElementById('edit-session-date').value;
-  if (!name) { toast('El nombre es requerido', 'error'); return; }
-  const { error } = await sb.from('sessions').update({ name, description: desc, event_date: date||null }).eq('id', id);
-  if (error) { toast('Error: '+error.message, 'error'); return; }
-  currentSession.name = name; currentSession.description = desc; currentSession.event_date = date;
-  closeModal();
-  toast('Sesión actualizada', 'success');
-  renderSessionDetail();
+ const name = document.getElementById('edit-session-name').value.trim();
+ const desc = document.getElementById('edit-session-desc').value.trim();
+ const date = document.getElementById('edit-session-date').value;
+ if (!name) { toast('El nombre es requerido', 'error'); return; }
+ const { error } = await sb.from('sessions').update({ name, description: desc, event_date: date||null }).eq('id', id);
+ if (error) { toast('Error: '+error.message, 'error'); return; }
+ currentSession.name = name; currentSession.description = desc; currentSession.event_date = date;
+ closeModal();
+ toast('Sesión actualizada', 'success');
+ renderSessionDetail();
 }
 
 async function deleteSession(sessionId) {
-  if (!confirm('¿Eliminar esta sesión y todos sus timers?')) return;
-  await sb.from('timers').delete().eq('session_id', sessionId);
-  await sb.from('sessions').delete().eq('id', sessionId);
-  toast('Sesión eliminada', 'success');
-  showPage('page-sessions');
+ if (!confirm('¿Eliminar esta sesión y todos sus timers?')) return;
+ await sb.from('timers').delete().eq('session_id', sessionId);
+ await sb.from('sessions').delete().eq('id', sessionId);
+ toast('Sesión eliminada', 'success');
+ showPage('page-sessions');
 }
 
 // ============================================================
 // DEVICES
 // ============================================================
 async function loadDevicesList() {
-  const { data } = await sb.from('devices').select('*').eq('user_id', currentUser.id).order('created_at');
-  devices = data || [];
-  const container = document.getElementById('devices-list');
-  const addBtn = document.getElementById('btn-add-device');
-  addBtn.style.display = devices.length >= 5 ? 'none' : '';
+ const { data } = await sb.from('devices').select('*').eq('user_id', currentUser.id).order('created_at');
+ devices = data || [];
+ const container = document.getElementById('devices-list');
+ const addBtn = document.getElementById('btn-add-device');
+ addBtn.style.display = devices.length >= 5 ? 'none' : '';
 
-  if (devices.length === 0) {
-    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">📱</div><div class="empty-state-text">No hay dispositivos registrados</div><div class="empty-state-sub">Puedes registrar hasta 5 dispositivos</div></div>`;
-  } else {
-    container.innerHTML = devices.map(d => `
-      <div class="device-card">
-        <div class="device-icon">${d.type==='tablet'?'📟':d.type==='desktop'?'🖥️':'📱'}</div>
-        <div class="device-name">${esc(d.name)}</div>
-        <div class="device-role" style="margin-bottom:12px;">${d.default_role==='stager'?'🎤 Stager':'🎛️ Organizador'}</div>
-        <button class="btn btn-danger btn-sm" onclick="deleteDevice('${d.id}')">Eliminar</button>
-      </div>
-    `).join('');
-  }
+ if (devices.length === 0) {
+ container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon"></div><div class="empty-state-text">No hay dispositivos registrados</div><div class="empty-state-sub">Puedes registrar hasta 5 dispositivos</div></div>`;
+ } else {
+ container.innerHTML = devices.map(d => `
+ <div class="device-card">
+ <div class="device-icon">${d.type==='tablet'?'':d.type==='desktop'?'':''}</div>
+ <div class="device-name">${esc(d.name)}</div>
+ <div class="device-role" style="margin-bottom:12px;">${d.default_role==='stager'?' Stager':' Organizador'}</div>
+ <button class="btn btn-danger btn-sm" onclick="deleteDevice('${d.id}')">Eliminar</button>
+ </div>
+ `).join('');
+ }
 }
 
 function openAddDevice() {
-  if (devices.length >= 5) { toast('Máximo 5 dispositivos por cuenta', 'error'); return; }
-  showModal(`
-    <div class="modal-title">📱 Agregar Dispositivo</div>
-    <div class="form-group">
-      <label class="form-label">Nombre del Dispositivo</label>
-      <input type="text" id="dev-name" class="form-input" placeholder="Ej: iPad del escenario">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Tipo</label>
-      <select id="dev-type" class="form-input">
-        <option value="mobile">📱 Móvil</option>
-        <option value="tablet">📟 Tablet</option>
-        <option value="desktop">🖥️ Escritorio</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Rol Principal</label>
-      <select id="dev-role" class="form-input">
-        <option value="stager">🎤 Stager (Presentador)</option>
-        <option value="organizador">🎛️ Organizador</option>
-      </select>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveDevice()">Agregar</button>
-    </div>
-  `);
+ if (devices.length >= 5) { toast('Máximo 5 dispositivos por cuenta', 'error'); return; }
+ showModal(`
+ <div class="modal-title">Agregar Dispositivo</div>
+ <div class="form-group">
+ <label class="form-label">Nombre del Dispositivo</label>
+ <input type="text" id="dev-name" class="form-input" placeholder="Ej: iPad del escenario">
+ </div>
+ <div class="form-group">
+ <label class="form-label">Tipo</label>
+ <select id="dev-type" class="form-input">
+ <option value="mobile"> Móvil</option>
+ <option value="tablet"> Tablet</option>
+ <option value="desktop"> Escritorio</option>
+ </select>
+ </div>
+ <div class="form-group">
+ <label class="form-label">Rol Principal</label>
+ <select id="dev-role" class="form-input">
+ <option value="stager"> Stager (Presentador)</option>
+ <option value="organizador"> Organizador</option>
+ </select>
+ </div>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+ <button class="btn btn-primary" onclick="saveDevice()">Agregar</button>
+ </div>
+ `);
 }
 
 async function saveDevice() {
-  const name = document.getElementById('dev-name').value.trim();
-  if (!name) { toast('Nombre requerido', 'error'); return; }
-  const type = document.getElementById('dev-type').value;
-  const role = document.getElementById('dev-role').value;
-  const { data, error } = await sb.from('devices').insert({ user_id: currentUser.id, name, type, default_role: role }).select().single();
-  if (error) { toast('Error: '+error.message, 'error'); return; }
-  closeModal();
-  toast('Dispositivo agregado', 'success');
-  await loadDevicesList();
+ const name = document.getElementById('dev-name').value.trim();
+ if (!name) { toast('Nombre requerido', 'error'); return; }
+ const type = document.getElementById('dev-type').value;
+ const role = document.getElementById('dev-role').value;
+ const { data, error } = await sb.from('devices').insert({ user_id: currentUser.id, name, type, default_role: role }).select().single();
+ if (error) { toast('Error: '+error.message, 'error'); return; }
+ closeModal();
+ toast('Dispositivo agregado', 'success');
+ await loadDevicesList();
 }
 
 async function deleteDevice(id) {
-  if (!confirm('¿Eliminar este dispositivo?')) return;
-  await sb.from('devices').delete().eq('id', id);
-  toast('Dispositivo eliminado', 'success');
-  await loadDevicesList();
+ if (!confirm('¿Eliminar este dispositivo?')) return;
+ await sb.from('devices').delete().eq('id', id);
+ toast('Dispositivo eliminado', 'success');
+ await loadDevicesList();
 }
 
 // ============================================================
 // ACCOUNT
 // ============================================================
 function loadAccountPage() {
-  if (!currentProfile) return;
-  document.getElementById('account-name').value = currentProfile.full_name || '';
-  document.getElementById('account-email').value = currentProfile.email || currentUser.email || '';
+ if (!currentProfile) return;
+ document.getElementById('account-name').value = currentProfile.full_name || '';
+ document.getElementById('account-email').value = currentProfile.email || currentUser.email || '';
 }
 
 async function saveAccount() {
-  const name = document.getElementById('account-name').value.trim();
-  if (!name) { toast('El nombre es requerido', 'error'); return; }
-  await sb.from('profiles').upsert({ id: currentUser.id, full_name: name, email: currentProfile.email });
-  currentProfile.full_name = name;
-  updateSidebar();
-  toast('Perfil actualizado', 'success');
+ const name = document.getElementById('account-name').value.trim();
+ if (!name) { toast('El nombre es requerido', 'error'); return; }
+ await sb.from('profiles').upsert({ id: currentUser.id, full_name: name, email: currentProfile.email });
+ currentProfile.full_name = name;
+ updateSidebar();
+ toast('Perfil actualizado', 'success');
 }
 
 async function changePassword() {
-  const pwd = document.getElementById('new-password').value;
-  if (pwd.length < 6) { toast('La contraseña debe tener al menos 6 caracteres', 'error'); return; }
-  const { error } = await sb.auth.updateUser({ password: pwd });
-  if (error) { toast('Error: '+error.message, 'error'); return; }
-  document.getElementById('new-password').value = '';
-  toast('Contraseña actualizada', 'success');
+ const pwd = document.getElementById('new-password').value;
+ if (pwd.length < 6) { toast('La contraseña debe tener al menos 6 caracteres', 'error'); return; }
+ const { error } = await sb.auth.updateUser({ password: pwd });
+ if (error) { toast('Error: '+error.message, 'error'); return; }
+ document.getElementById('new-password').value = '';
+ toast('Contraseña actualizada', 'success');
 }
 
 // ============================================================
 // ROLE SELECT
 // ============================================================
 function openRoleSelect(sessionId) {
-  if (currentSession && currentSession.id !== sessionId) {
-    sb.from('sessions').select('*').eq('id', sessionId).single().then(({data}) => {
-      currentSession = data;
-    });
-  }
-  document.getElementById('role-session-name-display').textContent = currentSession?.name || 'Sesión';
-  showScreen('screen-role-select');
+ if (currentSession && currentSession.id !== sessionId) {
+ sb.from('sessions').select('*').eq('id', sessionId).single().then(({data}) => {
+ currentSession = data;
+ });
+ }
+ document.getElementById('role-session-name-display').textContent = currentSession?.name || 'Sesión';
+ showScreen('screen-role-select');
 }
 
 function enterOrganizadorMode() {
-  startOrganizadorView();
+ startOrganizadorView();
 }
 
 function openStagerDeviceSelect() {
-  if (devices.length === 0) {
-    showModal(`
-      <div class="modal-title">📱 Selecciona un Dispositivo</div>
-      <p style="color:var(--text2);margin-bottom:20px;">No tienes dispositivos registrados. Puedes continuar como Stager genérico.</p>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-        <button class="btn btn-primary" onclick="closeModal();startStagerView(null)">Continuar</button>
-      </div>
-    `);
-    return;
-  }
-  showModal(`
-    <div class="modal-title">📱 Seleccionar Dispositivo Stager</div>
-    <p style="color:var(--text2);margin-bottom:16px;">¿Desde qué dispositivo estás presentando?</p>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      ${devices.map(d=>`
-        <div onclick="closeModal();startStagerView('${d.id}')" style="padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-          <span style="font-size:24px;">${d.type==='tablet'?'📟':d.type==='desktop'?'🖥️':'📱'}</span>
-          <div><div style="font-weight:600;">${esc(d.name)}</div><div style="font-size:12px;color:var(--text2);">${d.default_role}</div></div>
-        </div>
-      `).join('')}
-      <div onclick="closeModal();startStagerView(null)" style="padding:14px;background:var(--surface2);border:1px dashed var(--border);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--text3)'" onmouseout="this.style.borderColor='var(--border)'">
-        <span style="font-size:24px;">👤</span>
-        <div><div style="font-weight:600;">Dispositivo Genérico</div><div style="font-size:12px;color:var(--text2);">Sin dispositivo específico</div></div>
-      </div>
-    </div>
-  `);
+ if (devices.length === 0) {
+ showModal(`
+ <div class="modal-title">Selecciona un Dispositivo</div>
+ <p style="color:var(--text2);margin-bottom:20px;">No tienes dispositivos registrados. Puedes continuar como Stager genérico.</p>
+ <div class="modal-footer">
+ <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+ <button class="btn btn-primary" onclick="closeModal();startStagerView(null)">Continuar</button>
+ </div>
+ `);
+ return;
+ }
+ showModal(`
+ <div class="modal-title">Seleccionar Dispositivo Stager</div>
+ <p style="color:var(--text2);margin-bottom:16px;">¿Desde qué dispositivo estás presentando?</p>
+ <div style="display:flex;flex-direction:column;gap:8px;">
+ ${devices.map(d=>`
+ <div onclick="closeModal();startStagerView('${d.id}')" style="padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+ <span style="font-size:24px;">${d.type==='tablet'?'':d.type==='desktop'?'':''}</span>
+ <div><div style="font-weight:600;">${esc(d.name)}</div><div style="font-size:12px;color:var(--text2);">${d.default_role}</div></div>
+ </div>
+ `).join('')}
+ <div onclick="closeModal();startStagerView(null)" style="padding:14px;background:var(--surface2);border:1px dashed var(--border);border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--text3)'" onmouseout="this.style.borderColor='var(--border)'">
+ <span style="font-size:24px;"></span>
+ <div><div style="font-weight:600;">Dispositivo Genérico</div><div style="font-size:12px;color:var(--text2);">Sin dispositivo específico</div></div>
+ </div>
+ </div>
+ `);
 }
 
 // ============================================================
@@ -2140,204 +2215,204 @@ let orgRunning = false;
 let orgPaused = false;
 
 async function startOrganizadorView() {
-  showScreen('screen-organizador');
-  orgActiveIdx = -1; orgRemaining = 0; orgRunning = false; orgPaused = false;
+ showScreen('screen-organizador');
+ orgActiveIdx = -1; orgRemaining = 0; orgRunning = false; orgPaused = false;
 
-  // Load fresh timers
-  const { data } = await sb.from('timers').select('*').eq('session_id', currentSession.id).order('order_index');
-  currentTimers = data || [];
+ // Load fresh timers
+ const { data } = await sb.from('timers').select('*').eq('session_id', currentSession.id).order('order_index');
+ currentTimers = data || [];
 
-  renderOrgMain();
-  renderOrgTimerList();
-  renderMsgDeviceTabs();
+ renderOrgMain();
+ renderOrgTimerList();
+ renderMsgDeviceTabs();
 
-  // Subscribe to realtime for messages from stagers (if any)
-  subscribeOrganizador();
+ // Subscribe to realtime for messages from stagers (if any)
+ subscribeOrganizador();
 }
 
 function renderOrgMain() {
-  const t = orgActiveIdx >= 0 ? currentTimers[orgActiveIdx] : null;
-  const main = document.getElementById('runner-main');
-  const dur = t ? formatDuration(t.duration_seconds) : '—';
-  const remStr = orgActiveIdx >= 0 ? formatDuration(orgRemaining) : '—';
-  const pct = t ? Math.max(0, (orgRemaining / t.duration_seconds) * 100) : 0;
+ const t = orgActiveIdx >= 0 ? currentTimers[orgActiveIdx] : null;
+ const main = document.getElementById('runner-main');
+ const dur = t ? formatDuration(t.duration_seconds) : '—';
+ const remStr = orgActiveIdx >= 0 ? formatDuration(orgRemaining) : '—';
+ const pct = t ? Math.max(0, (orgRemaining / t.duration_seconds) * 100) : 0;
 
-  const nextT = orgActiveIdx >= 0 && orgActiveIdx < currentTimers.length - 1 ? currentTimers[orgActiveIdx+1] : null;
+ const nextT = orgActiveIdx >= 0 && orgActiveIdx < currentTimers.length - 1 ? currentTimers[orgActiveIdx+1] : null;
 
-  const statusClass = !t ? '' : orgRemaining <= 60 ? ' danger' : orgRemaining <= 300 ? ' warning' : '';
+ const statusClass = !t ? '' : orgRemaining <= 60 ? ' danger' : orgRemaining <= 300 ? ' warning' : '';
 
-  main.innerHTML = `
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-      <button class="btn btn-ghost btn-sm" onclick="backFromOrganizador()">← Salir</button>
-      <h2 style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;">${esc(currentSession.name)}</h2>
-      <div class="live-dot"></div>
-    </div>
+ main.innerHTML = `
+ <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+ <button class="btn btn-ghost btn-sm" onclick="backFromOrganizador()">← Salir</button>
+ <h2 style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;">${esc(currentSession.name)}</h2>
+ <div class="live-dot"></div>
+ </div>
 
-    <div class="runner-controls">
-      <button class="btn btn-success" onclick="orgStart()" ${!t||orgRunning?'disabled':''}>▶ Iniciar</button>
-      <button class="btn btn-secondary" onclick="orgPause()" ${!orgRunning?'disabled':''}>⏸ Pausar</button>
-      <button class="btn btn-ghost" onclick="orgReset()">↺ Reiniciar</button>
-      ${orgActiveIdx < currentTimers.length-1 ? `<button class="btn btn-secondary" onclick="orgNext()">Siguiente →</button>` : ''}
-      <button class="btn btn-ghost btn-sm" onclick="openAddTimer()">+ Timer</button>
-    </div>
+ <div class="runner-controls">
+ <button class="btn btn-success" onclick="orgStart()" ${!t||orgRunning?'disabled':''}> Iniciar</button>
+ <button class="btn btn-secondary" onclick="orgPause()" ${!orgRunning?'disabled':''}> Pausar</button>
+ <button class="btn btn-ghost" onclick="orgReset()">↺ Reiniciar</button>
+ ${orgActiveIdx < currentTimers.length-1 ? `<button class="btn btn-secondary" onclick="orgNext()">Siguiente →</button>` : ''}
+ <button class="btn btn-ghost btn-sm" onclick="openAddTimer()">+ Timer</button>
+ </div>
 
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:20px;text-align:center;">
-      ${t ? `
-        <div style="font-size:14px;color:var(--text2);margin-bottom:4px;">${esc(t.name)}</div>
-        ${t.speaker?`<div style="font-size:12px;color:var(--text3);margin-bottom:16px;">🎤 ${esc(t.speaker)}</div>`:'<div style="height:20px;"></div>'}
-        <div style="font-family:var(--font-mono);font-size:clamp(48px,8vw,96px);font-weight:300;color:${orgRemaining<=60?'var(--red)':orgRemaining<=300?'var(--yellow)':'var(--accent)'};letter-spacing:-1px;">${remStr}</div>
-        <div style="font-size:13px;color:var(--text3);margin-top:8px;">de ${dur} total</div>
-        <div style="height:6px;background:var(--surface3);border-radius:3px;margin-top:20px;overflow:hidden;">
-          <div style="height:100%;width:${pct}%;background:${orgRemaining<=60?'var(--red)':orgRemaining<=300?'var(--yellow)':'var(--green)'};border-radius:3px;transition:width 1s linear;"></div>
-        </div>
-        ${t.notes?`<div style="margin-top:16px;font-size:12px;color:var(--text3);background:var(--surface2);border-radius:6px;padding:8px 12px;">📝 ${esc(t.notes)}</div>`:''}
-      ` : `<div style="color:var(--text3);font-family:var(--font-mono);font-size:18px;">Selecciona un timer para iniciar</div>`}
-    </div>
+ <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:20px;text-align:center;">
+ ${t ? `
+ <div style="font-size:14px;color:var(--text2);margin-bottom:4px;">${esc(t.name)}</div>
+ ${t.speaker?`<div style="font-size:12px;color:var(--text3);margin-bottom:16px;"> ${esc(t.speaker)}</div>`:'<div style="height:20px;"></div>'}
+ <div style="font-family:var(--font-mono);font-size:clamp(48px,8vw,96px);font-weight:300;color:${orgRemaining<=60?'var(--red)':orgRemaining<=300?'var(--yellow)':'var(--accent)'};letter-spacing:-1px;">${remStr}</div>
+ <div style="font-size:13px;color:var(--text3);margin-top:8px;">de ${dur} total</div>
+ <div style="height:6px;background:var(--surface3);border-radius:3px;margin-top:20px;overflow:hidden;">
+ <div style="height:100%;width:${pct}%;background:${orgRemaining<=60?'var(--red)':orgRemaining<=300?'var(--yellow)':'var(--green)'};border-radius:3px;transition:width 1s linear;"></div>
+ </div>
+ ${t.notes?`<div style="margin-top:16px;font-size:12px;color:var(--text3);background:var(--surface2);border-radius:6px;padding:8px 12px;"> ${esc(t.notes)}</div>`:''}
+ ` : `<div style="color:var(--text3);font-family:var(--font-mono);font-size:18px;">Selecciona un timer para iniciar</div>`}
+ </div>
 
-    ${nextT ? `
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;">
-        <div>
-          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Siguiente</div>
-          <div style="font-size:15px;font-weight:600;">${esc(nextT.name)}</div>
-          ${nextT.speaker?`<div style="font-size:12px;color:var(--text2);">🎤 ${esc(nextT.speaker)}</div>`:''}
-        </div>
-        <div style="font-family:var(--font-mono);font-size:24px;color:var(--text3);">${formatDuration(nextT.duration_seconds)}</div>
-      </div>
-    ` : ''}
-  `;
+ ${nextT ? `
+ <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;">
+ <div>
+ <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Siguiente</div>
+ <div style="font-size:15px;font-weight:600;">${esc(nextT.name)}</div>
+ ${nextT.speaker?`<div style="font-size:12px;color:var(--text2);"> ${esc(nextT.speaker)}</div>`:''}
+ </div>
+ <div style="font-family:var(--font-mono);font-size:24px;color:var(--text3);">${formatDuration(nextT.duration_seconds)}</div>
+ </div>
+ ` : ''}
+ `;
 }
 
 function renderOrgTimerList() {
-  const list = document.getElementById('runner-timer-list');
-  list.innerHTML = currentTimers.map((t, i) => `
-    <div class="runner-timer-item ${i===orgActiveIdx?'current':''}" onclick="orgSelectTimer(${i})">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <div style="width:4px;height:32px;border-radius:2px;background:${t.color||'var(--accent)'};flex-shrink:0;"></div>
-        <div>
-          <div class="runner-timer-item-name">${esc(t.name)}</div>
-          ${t.speaker?`<div style="font-size:10px;color:var(--text3);">🎤 ${esc(t.speaker)}</div>`:''}
-          <div class="runner-timer-item-dur">${formatDuration(t.duration_seconds)}</div>
-        </div>
-      </div>
-    </div>
-  `).join('') || '<div style="color:var(--text3);font-size:12px;padding:12px;">Sin timers</div>';
+ const list = document.getElementById('runner-timer-list');
+ list.innerHTML = currentTimers.map((t, i) => `
+ <div class="runner-timer-item ${i===orgActiveIdx?'current':''}" onclick="orgSelectTimer(${i})">
+ <div style="display:flex;align-items:center;gap:8px;">
+ <div style="width:4px;height:32px;border-radius:2px;background:${t.color||'var(--accent)'};flex-shrink:0;"></div>
+ <div>
+ <div class="runner-timer-item-name">${esc(t.name)}</div>
+ ${t.speaker?`<div style="font-size:10px;color:var(--text3);"> ${esc(t.speaker)}</div>`:''}
+ <div class="runner-timer-item-dur">${formatDuration(t.duration_seconds)}</div>
+ </div>
+ </div>
+ </div>
+ `).join('') || '<div style="color:var(--text3);font-size:12px;padding:12px;">Sin timers</div>';
 }
 
 function renderMsgDeviceTabs() {
-  const tabs = document.getElementById('msg-device-tabs');
-  const devs = [{ id: 'all', name: 'Todos' }, ...devices.filter(d=>d.default_role==='stager')];
-  if (devs.length === 1) devs.push({ id: 'generic', name: 'Stager' }); // generic fallback
-  currentMsgDevice = devs[0].id;
-  tabs.innerHTML = devs.map((d, i) => `
-    <button class="msg-device-tab ${i===0?'active':''}" onclick="selectMsgDevice('${d.id}',this)">${esc(d.name)}</button>
-  `).join('');
+ const tabs = document.getElementById('msg-device-tabs');
+ const devs = [{ id: 'all', name: 'Todos' }, ...devices.filter(d=>d.default_role==='stager')];
+ if (devs.length === 1) devs.push({ id: 'generic', name: 'Stager' }); // generic fallback
+ currentMsgDevice = devs[0].id;
+ tabs.innerHTML = devs.map((d, i) => `
+ <button class="msg-device-tab ${i===0?'active':''}" onclick="selectMsgDevice('${d.id}',this)">${esc(d.name)}</button>
+ `).join('');
 }
 
 function selectMsgDevice(id, el) {
-  currentMsgDevice = id;
-  document.querySelectorAll('.msg-device-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
+ currentMsgDevice = id;
+ document.querySelectorAll('.msg-device-tab').forEach(t=>t.classList.remove('active'));
+ el.classList.add('active');
 }
 
 function orgSelectTimer(idx) {
-  if (orgInterval) { clearInterval(orgInterval); orgInterval = null; }
-  orgRunning = false; orgPaused = false;
-  orgActiveIdx = idx;
-  orgRemaining = currentTimers[idx].duration_seconds;
-  renderOrgMain();
-  renderOrgTimerList();
-  broadcastTimerState();
+ if (orgInterval) { clearInterval(orgInterval); orgInterval = null; }
+ orgRunning = false; orgPaused = false;
+ orgActiveIdx = idx;
+ orgRemaining = currentTimers[idx].duration_seconds;
+ renderOrgMain();
+ renderOrgTimerList();
+ broadcastTimerState();
 }
 
 let orgInterval = null;
 
 function orgStart() {
-  if (orgActiveIdx < 0) return;
-  orgRunning = true; orgPaused = false;
-  if (orgInterval) clearInterval(orgInterval);
-  orgInterval = setInterval(() => {
-    if (!orgRunning || orgPaused) return;
-    orgRemaining--;
-    if (orgRemaining <= 0) {
-      orgRemaining = 0;
-      orgRunning = false;
-      clearInterval(orgInterval);
-      toast('⏰ Timer finalizado: ' + currentTimers[orgActiveIdx].name, 'info');
-    }
-    renderOrgMain();
-    broadcastTimerState();
-  }, 1000);
-  renderOrgMain();
-  broadcastTimerState();
+ if (orgActiveIdx < 0) return;
+ orgRunning = true; orgPaused = false;
+ if (orgInterval) clearInterval(orgInterval);
+ orgInterval = setInterval(() => {
+ if (!orgRunning || orgPaused) return;
+ orgRemaining--;
+ if (orgRemaining <= 0) {
+ orgRemaining = 0;
+ orgRunning = false;
+ clearInterval(orgInterval);
+ toast('Timer finalizado: ' + currentTimers[orgActiveIdx].name, 'info');
+ }
+ renderOrgMain();
+ broadcastTimerState();
+ }, 1000);
+ renderOrgMain();
+ broadcastTimerState();
 }
 
 function orgPause() {
-  orgPaused = !orgPaused;
-  orgRunning = !orgPaused;
-  renderOrgMain();
-  broadcastTimerState();
+ orgPaused = !orgPaused;
+ orgRunning = !orgPaused;
+ renderOrgMain();
+ broadcastTimerState();
 }
 
 function orgReset() {
-  if (orgActiveIdx < 0) return;
-  if (orgInterval) { clearInterval(orgInterval); orgInterval = null; }
-  orgRunning = false; orgPaused = false;
-  orgRemaining = currentTimers[orgActiveIdx].duration_seconds;
-  renderOrgMain();
-  broadcastTimerState();
+ if (orgActiveIdx < 0) return;
+ if (orgInterval) { clearInterval(orgInterval); orgInterval = null; }
+ orgRunning = false; orgPaused = false;
+ orgRemaining = currentTimers[orgActiveIdx].duration_seconds;
+ renderOrgMain();
+ broadcastTimerState();
 }
 
 function orgNext() {
-  if (orgActiveIdx < currentTimers.length - 1) {
-    orgSelectTimer(orgActiveIdx + 1);
-  }
+ if (orgActiveIdx < currentTimers.length - 1) {
+ orgSelectTimer(orgActiveIdx + 1);
+ }
 }
 
 function backFromOrganizador() {
-  if (orgInterval) { clearInterval(orgInterval); orgInterval = null; }
-  orgRunning = false; orgPaused = false; orgActiveIdx = -1;
-  if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
-  showScreen('screen-app');
-  showPage('page-session-detail');
+ if (orgInterval) { clearInterval(orgInterval); orgInterval = null; }
+ orgRunning = false; orgPaused = false; orgActiveIdx = -1;
+ if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+ showScreen('screen-app');
+ showPage('page-session-detail');
 }
 
 async function broadcastTimerState() {
-  if (!currentSession) return;
-  const t = orgActiveIdx >= 0 ? currentTimers[orgActiveIdx] : null;
-  const nextT = orgActiveIdx >= 0 && orgActiveIdx < currentTimers.length-1 ? currentTimers[orgActiveIdx+1] : null;
-  await sb.from('session_state').upsert({
-    session_id: currentSession.id,
-    active_timer_id: t ? t.id : null,
-    active_timer_name: t ? t.name : null,
-    active_timer_speaker: t ? t.speaker : null,
-    remaining_seconds: orgRemaining,
-    total_seconds: t ? t.duration_seconds : 0,
-    is_running: orgRunning,
-    next_timer_name: nextT ? nextT.name : null,
-    next_timer_speaker: nextT ? nextT.speaker : null,
-    next_timer_duration: nextT ? nextT.duration_seconds : null,
-    updated_at: new Date().toISOString()
-  }, { onConflict: 'session_id' });
+ if (!currentSession) return;
+ const t = orgActiveIdx >= 0 ? currentTimers[orgActiveIdx] : null;
+ const nextT = orgActiveIdx >= 0 && orgActiveIdx < currentTimers.length-1 ? currentTimers[orgActiveIdx+1] : null;
+ await sb.from('session_state').upsert({
+ session_id: currentSession.id,
+ active_timer_id: t ? t.id : null,
+ active_timer_name: t ? t.name : null,
+ active_timer_speaker: t ? t.speaker : null,
+ remaining_seconds: orgRemaining,
+ total_seconds: t ? t.duration_seconds : 0,
+ is_running: orgRunning,
+ next_timer_name: nextT ? nextT.name : null,
+ next_timer_speaker: nextT ? nextT.speaker : null,
+ next_timer_duration: nextT ? nextT.duration_seconds : null,
+ updated_at: new Date().toISOString()
+ }, { onConflict: 'session_id' });
 }
 
 async function sendMessage() {
-  const input = document.getElementById('msg-input');
-  const text = input.value.trim();
-  if (!text) return;
-  await sb.from('messages').insert({
-    session_id: currentSession.id,
-    device_target: currentMsgDevice,
-    content: text,
-    from_role: 'organizador',
-    created_at: new Date().toISOString()
-  });
-  input.value = '';
-  toast('Mensaje enviado', 'success');
+ const input = document.getElementById('msg-input');
+ const text = input.value.trim();
+ if (!text) return;
+ await sb.from('messages').insert({
+ session_id: currentSession.id,
+ device_target: currentMsgDevice,
+ content: text,
+ from_role: 'organizador',
+ created_at: new Date().toISOString()
+ });
+ input.value = '';
+ toast('Mensaje enviado', 'success');
 }
 
 function subscribeOrganizador() {
-  if (realtimeChannel) sb.removeChannel(realtimeChannel);
-  // We'll also reload timers on changes
+ if (realtimeChannel) sb.removeChannel(realtimeChannel);
+ // We'll also reload timers on changes
 }
 
 // ============================================================
@@ -2346,166 +2421,191 @@ function subscribeOrganizador() {
 let stagerPollInterval = null;
 
 async function startStagerView(deviceId) {
-  currentDevice = deviceId ? devices.find(d=>d.id===deviceId) : null;
-  showScreen('screen-stager');
-  document.getElementById('stager-session-name').textContent = currentSession?.name || '—';
-  document.getElementById('stager-device-display').textContent = currentDevice ? `📱 ${currentDevice.name}` : '📱 STAGER';
+ currentDevice = deviceId ? devices.find(d=>d.id===deviceId) : null;
+ showScreen('screen-stager');
+ document.getElementById('stager-session-name').textContent = currentSession?.name || '—';
+ document.getElementById('stager-device-display').textContent = currentDevice ? ` ${currentDevice.name}` : ' STAGER';
 
-  // Start polling
-  if (stagerPollInterval) clearInterval(stagerPollInterval);
-  await updateStagerView();
-  stagerPollInterval = setInterval(updateStagerView, 1000);
+ // Start polling
+ if (stagerPollInterval) clearInterval(stagerPollInterval);
+ await updateStagerView();
+ stagerPollInterval = setInterval(updateStagerView, 1000);
 
-  // Subscribe to messages via realtime
-  subscribeStagerMessages();
+ // Subscribe to messages via realtime
+ subscribeStagerMessages();
 }
 
 async function updateStagerView() {
-  if (!currentSession) return;
-  const { data: state } = await sb.from('session_state').select('*').eq('session_id', currentSession.id).single();
+ if (!currentSession) return;
+ const { data: state } = await sb.from('session_state').select('*').eq('session_id', currentSession.id).single();
 
-  const main = document.getElementById('stager-main');
+ const main = document.getElementById('stager-main');
 
-  if (!state || !state.active_timer_name) {
-    main.innerHTML = `<div class="stager-no-timer">Sin timer activo</div>`;
-    document.getElementById('stager-next-content').innerHTML = `<div style="color:rgba(255,255,255,0.2);font-size:13px;">Sin turno siguiente</div>`;
-    return;
-  }
+ if (!state || !state.active_timer_name) {
+ main.innerHTML = `<div class="stager-no-timer">Sin timer activo</div>`;
+ document.getElementById('stager-next-content').innerHTML = `<div style="color:rgba(255,255,255,0.2);font-size:13px;">Sin turno siguiente</div>`;
+ return;
+ }
 
-  const rem = state.remaining_seconds || 0;
-  const total = state.total_seconds || 1;
-  const pct = Math.max(0, (rem / total) * 100);
-  const remStr = formatDuration(rem);
-  const isRunning = state.is_running;
-  const timeClass = rem <= 0 ? 'finished' : rem <= 60 ? 'danger' : rem <= 300 ? 'warning' : '';
-  const barColor = rem <= 60 ? '#ff4f6a' : rem <= 300 ? '#ffcc00' : '#4fffb0';
+ const rem = state.remaining_seconds || 0;
+ const total = state.total_seconds || 1;
+ const pct = Math.max(0, (rem / total) * 100);
+ const remStr = formatDuration(rem);
+ const isRunning = state.is_running;
+ const timeClass = rem <= 0 ? 'finished' : rem <= 60 ? 'danger' : rem <= 300 ? 'warning' : '';
+ const barColor = rem <= 60 ? '#ff4f6a' : rem <= 300 ? '#ffcc00' : '#4fffb0';
 
-  main.innerHTML = `
-    <div class="stager-timer-label">${isRunning ? '⏱ EN CURSO' : (rem <= 0 ? '✓ TIEMPO AGOTADO' : '⏸ PAUSADO')}</div>
-    ${state.active_timer_speaker ? `<div class="stager-speaker-name">${esc(state.active_timer_speaker)}</div>` : ''}
-    <div class="stager-time ${timeClass}">${remStr}</div>
-    <div class="stager-timer-name">${esc(state.active_timer_name)}</div>
-    <div class="stager-progress">
-      <div class="stager-progress-bar" style="width:${pct}%;background:${barColor};"></div>
-    </div>
-  `;
+ main.innerHTML = `
+ <div class="stager-timer-label">${isRunning ? 'EN CURSO' : (rem <= 0 ? 'TIEMPO AGOTADO' : 'PAUSADO')}</div>
+ ${state.active_timer_speaker ? `<div class="stager-speaker-name">${esc(state.active_timer_speaker)}</div>` : ''}
+ <div class="stager-time ${timeClass}">${remStr}</div>
+ <div class="stager-timer-name">${esc(state.active_timer_name)}</div>
+ <div class="stager-progress">
+ <div class="stager-progress-bar" style="width:${pct}%;background:${barColor};"></div>
+ </div>
+ `;
 
-  if (state.next_timer_name) {
-    document.getElementById('stager-next-content').innerHTML = `
-      <div class="stager-next-name">${esc(state.next_timer_name)}</div>
-      ${state.next_timer_speaker ? `<div style="font-size:13px;color:rgba(255,255,255,0.4);">🎤 ${esc(state.next_timer_speaker)}</div>` : ''}
-      ${state.next_timer_duration ? `<div class="stager-next-time">${formatDuration(state.next_timer_duration)}</div>` : ''}
-    `;
-  } else {
-    document.getElementById('stager-next-content').innerHTML = `<div style="color:rgba(255,255,255,0.2);font-size:13px;">Sin turno siguiente</div>`;
-  }
+ if (state.next_timer_name) {
+ document.getElementById('stager-next-content').innerHTML = `
+ <div class="stager-next-name">${esc(state.next_timer_name)}</div>
+ ${state.next_timer_speaker ? `<div style="font-size:13px;color:rgba(255,255,255,0.4);"> ${esc(state.next_timer_speaker)}</div>` : ''}
+ ${state.next_timer_duration ? `<div class="stager-next-time">${formatDuration(state.next_timer_duration)}</div>` : ''}
+ `;
+ } else {
+ document.getElementById('stager-next-content').innerHTML = `<div style="color:rgba(255,255,255,0.2);font-size:13px;">Sin turno siguiente</div>`;
+ }
 }
 
 let stagerMsgChannel = null;
 
 function subscribeStagerMessages() {
-  if (stagerMsgChannel) sb.removeChannel(stagerMsgChannel);
-  stagerMsgChannel = sb.channel(`messages-${currentSession.id}`)
-    .on('postgres_changes', {
-      event: 'INSERT', schema: 'public', table: 'messages',
-      filter: `session_id=eq.${currentSession.id}`
-    }, payload => {
-      const msg = payload.new;
-      const devId = currentDevice ? currentDevice.id : 'generic';
-      if (msg.device_target === 'all' || msg.device_target === devId) {
-        addStagerMessage(msg.content);
-      }
-    })
-    .subscribe();
+ if (stagerMsgChannel) sb.removeChannel(stagerMsgChannel);
+ stagerMsgChannel = sb.channel(`messages-${currentSession.id}`)
+ .on('postgres_changes', {
+ event: 'INSERT', schema: 'public', table: 'messages',
+ filter: `session_id=eq.${currentSession.id}`
+ }, payload => {
+ const msg = payload.new;
+ const devId = currentDevice ? currentDevice.id : 'generic';
+ if (msg.device_target === 'all' || msg.device_target === devId) {
+ addStagerMessage(msg.content);
+ }
+ })
+ .subscribe();
 }
 
+let stagerPopupTimeout = null;
+
 function addStagerMessage(text) {
-  const container = document.getElementById('stager-messages');
-  // Remove placeholder
-  if (container.querySelector('div[style]')) container.innerHTML = '';
-  const el = document.createElement('div');
-  el.className = 'stager-message';
-  el.textContent = text;
-  container.prepend(el);
-  // Keep only last 5
-  while (container.children.length > 5) container.removeChild(container.lastChild);
+ const container = document.getElementById('stager-messages');
+ // Remove placeholder
+ if (container.querySelector('div[style]')) container.innerHTML = '';
+ const el = document.createElement('div');
+ el.className = 'stager-message';
+ el.textContent = text;
+ container.prepend(el);
+ // Keep only last 5
+ while (container.children.length > 5) container.removeChild(container.lastChild);
+
+ // Show popup if landscape + small screen (phone horizontal)
+ const isLandscape = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
+ if (isLandscape) {
+   showStagerMsgPopup(text);
+ }
+}
+
+function showStagerMsgPopup(text) {
+ const popup = document.getElementById('stager-msg-popup');
+ const popupText = document.getElementById('stager-msg-popup-text');
+ if (!popup || !popupText) return;
+ // Reset animation
+ popup.classList.remove('visible');
+ popupText.textContent = text;
+ // Force reflow
+ void popup.offsetWidth;
+ popup.classList.add('visible');
+ // Clear previous timeout
+ if (stagerPopupTimeout) clearTimeout(stagerPopupTimeout);
+ stagerPopupTimeout = setTimeout(() => {
+   popup.classList.remove('visible');
+ }, 5000);
 }
 
 // Exit stager
 window.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && document.getElementById('screen-stager').classList.contains('active')) {
-    exitStager();
-  }
+ if (e.key === 'Escape' && document.getElementById('screen-stager').classList.contains('active')) {
+ exitStager();
+ }
 });
 
 function exitStager() {
-  if (stagerPollInterval) { clearInterval(stagerPollInterval); stagerPollInterval = null; }
-  if (stagerMsgChannel) { sb.removeChannel(stagerMsgChannel); stagerMsgChannel = null; }
-  showScreen('screen-role-select');
+ if (stagerPollInterval) { clearInterval(stagerPollInterval); stagerPollInterval = null; }
+ if (stagerMsgChannel) { sb.removeChannel(stagerMsgChannel); stagerMsgChannel = null; }
+ showScreen('screen-role-select');
 }
 
 // ============================================================
 // FULLSCREEN
 // ============================================================
 function toggleFullscreen() {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch(()=>{});
-  } else {
-    document.exitFullscreen().catch(()=>{});
-  }
+ if (!document.fullscreenElement) {
+ document.documentElement.requestFullscreen().catch(()=>{});
+ } else {
+ document.exitFullscreen().catch(()=>{});
+ }
 }
 
 // ============================================================
 // MODAL
 // ============================================================
 function showModal(html) {
-  document.getElementById('modal-content').innerHTML = html;
-  document.getElementById('modal-overlay').classList.add('active');
+ document.getElementById('modal-content').innerHTML = html;
+ document.getElementById('modal-overlay').classList.add('active');
 }
 
 function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('active');
+ document.getElementById('modal-overlay').classList.remove('active');
 }
 
 document.getElementById('modal-overlay').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
+ if (e.target === this) closeModal();
 });
 
 // ============================================================
 // TOAST
 // ============================================================
 function toast(msg, type='info') {
-  const container = document.getElementById('toast-container');
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  const icons = { success:'✓', error:'✕', info:'ℹ' };
-  el.innerHTML = `<span>${icons[type]||'ℹ'}</span><span>${msg}</span>`;
-  container.appendChild(el);
-  setTimeout(() => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateX(20px)';
-    el.style.transition = 'all 0.3s';
-    setTimeout(() => el.remove(), 300);
-  }, 3000);
+ const container = document.getElementById('toast-container');
+ const el = document.createElement('div');
+ el.className = `toast ${type}`;
+ const icons = { success:'✓', error:'✕', info:'i' };
+ el.innerHTML = `<span>${icons[type]||'ℹ'}</span><span>${msg}</span>`;
+ container.appendChild(el);
+ setTimeout(() => {
+ el.style.opacity = '0';
+ el.style.transform = 'translateX(20px)';
+ el.style.transition = 'all 0.3s';
+ setTimeout(() => el.remove(), 300);
+ }, 3000);
 }
 
 // ============================================================
 // HELPERS
 // ============================================================
 function formatDuration(seconds) {
-  if (seconds == null || isNaN(seconds)) return '00:00';
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  if (h > 0) return `${pad(h)}:${pad(m)}:${pad(s)}`;
-  return `${pad(m)}:${pad(s)}`;
+ if (seconds == null || isNaN(seconds)) return '00:00';
+ const h = Math.floor(seconds / 3600);
+ const m = Math.floor((seconds % 3600) / 60);
+ const s = seconds % 60;
+ if (h > 0) return `${pad(h)}:${pad(m)}:${pad(s)}`;
+ return `${pad(m)}:${pad(s)}`;
 }
 
 function pad(n) { return String(n).padStart(2,'0'); }
 
 function esc(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+ if (!str) return '';
+ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ============================================================
