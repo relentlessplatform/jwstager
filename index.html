@@ -1586,6 +1586,13 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ============================================================
+// ICON HELPER — call after any dynamic HTML insertion
+// ============================================================
+function refreshIcons(root) {
+  lucide.createIcons({ el: root || document.body });
+}
+
+// ============================================================
 // APP STATE
 // ============================================================
 let currentUser = null;
@@ -1791,6 +1798,7 @@ async function loadDashboard() {
  } else {
  container.innerHTML = recent.map(s => sessionCardHTML(s)).join('');
  }
+ refreshIcons(container);
 }
 
 function sessionCardHTML(s) {
@@ -1819,6 +1827,7 @@ async function loadSessionsList() {
  } else {
  container.innerHTML = sessions.map(s => sessionCardHTML(s)).join('');
  }
+ refreshIcons(container);
  // Load timer counts
  for (const s of sessions) {
  const { count } = await sb.from('timers').select('*', {count:'exact',head:true}).eq('session_id', s.id);
@@ -1903,6 +1912,7 @@ function renderSessionDetail() {
  ${currentTimers.length===0?`<div class="empty-state"><div class="empty-state-icon"><i data-lucide="timer-off"></i></div><div class="empty-state-text">No hay timers aún</div><div class="empty-state-sub">Agrega el primer timer para esta sesión</div></div>`:currentTimers.map((t,i)=>timerRowHTML(t,i)).join('')}
  </div>
  `;
+ refreshIcons(body);
 }
 
 function timerRowHTML(t, i) {
@@ -2132,6 +2142,7 @@ async function loadDevicesList() {
  </div>
  `).join('');
  }
+ refreshIcons(container);
 }
 
 function openAddDevice() {
@@ -2612,8 +2623,10 @@ function toggleFullscreen() {
 // MODAL
 // ============================================================
 function showModal(html) {
- document.getElementById('modal-content').innerHTML = html;
+ const el = document.getElementById('modal-content');
+ el.innerHTML = html;
  document.getElementById('modal-overlay').classList.add('active');
+ refreshIcons(el);
 }
 
 function closeModal() {
@@ -2632,8 +2645,9 @@ function toast(msg, type='info') {
  const el = document.createElement('div');
  el.className = `toast ${type}`;
  const icons = { success:'<i data-lucide="check"></i>', error:'<i data-lucide="x"></i>', info:'<i data-lucide="info"></i>' };
- el.innerHTML = `<span class="toast-icon">${icons[type]||'<i data-lucide="info"></i>'}</span><span>${msg}</span>`; lucide.createIcons({el});
+ el.innerHTML = `<span class="toast-icon">${icons[type]||'<i data-lucide="info"></i>'}</span><span>${msg}</span>`;
  container.appendChild(el);
+ refreshIcons(el);
  setTimeout(() => {
  el.style.opacity = '0';
  el.style.transform = 'translateX(20px)';
@@ -2665,11 +2679,6 @@ function esc(str) {
 // START
 // ============================================================
 // Auto-reinitialize Lucide icons on any DOM mutation in dynamic areas
-const _lucideObserver = new MutationObserver(() => {
-  lucide.createIcons();
-});
-_lucideObserver.observe(document.body, { childList: true, subtree: true });
-
 init();
 </script>
 </body>
