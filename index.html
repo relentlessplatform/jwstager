@@ -6,7 +6,7 @@
 <title>JW Stager — Control de Escenario</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
  :root {
@@ -1937,33 +1937,34 @@ async function init() {
  const params = new URLSearchParams(window.location.search);
  const joinId = params.get('join');
  if (joinId) {
-   // Load the session publicly
    const { data: sess } = await sb.from('sessions').select('*').eq('id', joinId).single();
    if (sess) {
      currentSession = sess;
      const { data: timers } = await sb.from('timers').select('*').eq('session_id', joinId).order('order_index');
      currentTimers = timers || [];
+     // Clean URL without reload
+     window.history.replaceState({}, '', window.location.pathname);
      if (session) {
-       // Logged-in user: load their data then go straight to role select
+       // Logged-in: let them pick role
        currentUser = session.user;
        await loadUserData();
-       showScreen('screen-role-select');
        document.getElementById('role-session-name-display').textContent = sess.name;
+       showScreen('screen-role-select');
      } else {
-       // Guest: go directly to stager view without login
-       showScreen('screen-stager');
+       // Guest: go straight to Stager view, no login required
        document.getElementById('stager-session-name').textContent = sess.name;
        document.getElementById('stager-device-display').textContent = 'INVITADO';
        stagerCurrentTimerId = null;
+       showScreen('screen-stager');
        if (stagerPollInterval) clearInterval(stagerPollInterval);
        await updateStagerView();
        stagerPollInterval = setInterval(updateStagerView, 1000);
        subscribeStagerMessages();
      }
-     // Clean URL without reload
-     window.history.replaceState({}, '', window.location.pathname);
      return;
    }
+   // Invalid join ID — fall through to normal flow
+   window.history.replaceState({}, '', window.location.pathname);
  }
 
  if (session) {
@@ -2571,8 +2572,8 @@ async function shareQR(sessionId) {
    <div class="modal-title">Código QR de invitación</div>
    <p style="color:var(--text2);font-size:13px;margin-bottom:4px;">Escanea este código para entrar a la sesión como Stager.</p>
    <div style="text-align:center;">
-     <div class="qr-container">
-       <canvas id="qr-canvas"></canvas>
+     <div class="qr-container" style="display:inline-block;">
+       <div id="qr-canvas"></div>
      </div>
      <div style="font-size:11px;color:var(--text3);margin-top:8px;font-family:var(--font-mono);word-break:break-all;">${link}</div>
    </div>
@@ -2581,22 +2582,35 @@ async function shareQR(sessionId) {
      <button class="btn btn-secondary" onclick="downloadQR()">Descargar QR</button>
    </div>
  `);
- // Generate QR after modal renders
  setTimeout(() => {
-   const canvas = document.getElementById('qr-canvas');
-   if (canvas && window.QRCode) {
-     QRCode.toCanvas(canvas, link, { width: 240, margin: 2, color: { dark: '#000000', light: '#ffffff' } });
+   const el = document.getElementById('qr-canvas');
+   if (el && window.QRCode) {
+     new QRCode(el, {
+       text: link,
+       width: 240,
+       height: 240,
+       colorDark: '#000000',
+       colorLight: '#ffffff',
+       correctLevel: QRCode.CorrectLevel.H
+     });
    }
- }, 50);
+ }, 80);
 }
 
 function downloadQR() {
- const canvas = document.getElementById('qr-canvas');
- if (!canvas) return;
- const a = document.createElement('a');
- a.download = `qr-sesion-${currentSession?.id || 'invite'}.png`;
- a.href = canvas.toDataURL('image/png');
- a.click();
+ const img = document.querySelector('#qr-canvas img');
+ const canvas = document.querySelector('#qr-canvas canvas');
+ if (img) {
+   const a = document.createElement('a');
+   a.download = `qr-sesion.png`;
+   a.href = img.src;
+   a.click();
+ } else if (canvas) {
+   const a = document.createElement('a');
+   a.download = `qr-sesion.png`;
+   a.href = canvas.toDataURL('image/png');
+   a.click();
+ }
 }
 
 // ============================================================
