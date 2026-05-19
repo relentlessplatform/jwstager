@@ -1267,13 +1267,221 @@
    from { transform: scaleX(1); }
    to   { transform: scaleX(0); }
  }
- /* Only show popup on small landscape (phone horizontal) */
+ /* Only show original landscape popup on small landscape (phone horizontal) */
  @media (orientation: landscape) and (max-height: 500px) {
    .stager-msg-popup { display: flex; }
  }
  @media not ((orientation: landscape) and (max-height: 500px)) {
    .stager-msg-popup { display: none !important; }
  }
+
+ /* ===== IMPORTANT MESSAGE POPUP (universal) ===== */
+ .stager-important-popup {
+   position: fixed;
+   top: 20px; left: 50%; transform: translateX(-50%) translateY(-120px);
+   z-index: 9998;
+   background: linear-gradient(135deg, #ff6b35 0%, #ff4f6a 100%);
+   color: #fff;
+   font-family: var(--font-body);
+   font-size: 15px;
+   font-weight: 700;
+   padding: 14px 24px;
+   border-radius: 12px;
+   box-shadow: 0 8px 40px rgba(255,79,106,0.5);
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   min-width: 260px;
+   max-width: 480px;
+   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+   pointer-events: none;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+ }
+ .stager-important-popup.visible {
+   transform: translateX(-50%) translateY(0);
+ }
+ .stager-important-popup-bar {
+   position: absolute;
+   bottom: 0; left: 0;
+   height: 3px;
+   background: rgba(255,255,255,0.4);
+   width: 100%;
+   transform-origin: left;
+ }
+ .stager-important-popup.visible .stager-important-popup-bar {
+   animation: popupCountdown 6s linear forwards;
+ }
+ .imp-label {
+   font-size: 9px;
+   font-weight: 900;
+   letter-spacing: 2px;
+   text-transform: uppercase;
+   background: rgba(255,255,255,0.25);
+   padding: 2px 6px;
+   border-radius: 4px;
+   flex-shrink: 0;
+ }
+
+ /* ===== URGENT OVERLAY ===== */
+ .stager-urgent-overlay {
+   position: fixed;
+   inset: 0;
+   z-index: 9997;
+   background: #ff1a1a;
+   display: none;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   gap: 24px;
+   animation: urgentPulse 0.8s ease infinite alternate;
+   padding: 40px;
+ }
+ .stager-urgent-overlay.active { display: flex; }
+ .stager-urgent-label {
+   font-family: var(--font-display);
+   font-size: clamp(20px, 4vw, 36px);
+   letter-spacing: 6px;
+   color: rgba(255,255,255,0.6);
+   text-align: center;
+ }
+ .stager-urgent-text {
+   font-family: var(--font-display);
+   font-size: clamp(32px, 7vw, 80px);
+   letter-spacing: 2px;
+   color: #fff;
+   text-align: center;
+   line-height: 1.1;
+   text-shadow: 0 0 40px rgba(255,255,255,0.4);
+ }
+ .stager-urgent-timer {
+   font-family: var(--font-mono);
+   font-size: clamp(36px, 6vw, 64px);
+   color: rgba(255,255,255,0.5);
+   letter-spacing: -1px;
+ }
+ .stager-urgent-close {
+   font-size: 12px;
+   color: rgba(255,255,255,0.4);
+   letter-spacing: 2px;
+   text-transform: uppercase;
+   margin-top: 20px;
+   cursor: pointer;
+   border: 1px solid rgba(255,255,255,0.2);
+   padding: 8px 20px;
+   border-radius: 6px;
+   pointer-events: all;
+   background: none;
+   font-family: var(--font-body);
+   transition: all 0.2s;
+ }
+ .stager-urgent-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+ @keyframes urgentPulse {
+   from { background: #cc0000; }
+   to   { background: #ff2222; }
+ }
+
+ /* ===== TIMER FLASH ===== */
+ @keyframes timerFlash {
+   0%   { box-shadow: 0 0 0px rgba(232,255,71,0); }
+   20%  { box-shadow: 0 0 60px rgba(232,255,71,0.95), inset 0 0 40px rgba(232,255,71,0.15); }
+   40%  { box-shadow: 0 0 10px rgba(232,255,71,0.2); }
+   60%  { box-shadow: 0 0 60px rgba(232,255,71,0.95), inset 0 0 40px rgba(232,255,71,0.15); }
+   80%  { box-shadow: 0 0 10px rgba(232,255,71,0.2); }
+   100% { box-shadow: 0 0 60px rgba(232,255,71,0.95), inset 0 0 40px rgba(232,255,71,0.15); }
+ }
+ .timer-flashing {
+   animation: timerFlash 0.4s ease 5 !important;
+   border-color: var(--accent) !important;
+ }
+ /* stager screen flash */
+ @keyframes stagerFlash {
+   0%, 100% { background: #000; }
+   50%       { background: #1a1a00; box-shadow: inset 0 0 120px rgba(232,255,71,0.35); }
+ }
+ .stager-flashing { animation: stagerFlash 0.35s ease 6 !important; }
+
+ /* ===== MSG TYPE SELECTOR ===== */
+ .msg-type-row {
+   display: flex;
+   gap: 4px;
+   margin-bottom: 6px;
+ }
+ .msg-type-btn {
+   flex: 1;
+   padding: 5px 8px;
+   border-radius: 6px;
+   font-size: 10px;
+   font-weight: 700;
+   letter-spacing: 0.5px;
+   text-transform: uppercase;
+   cursor: pointer;
+   border: 1px solid var(--border);
+   background: transparent;
+   color: var(--text3);
+   font-family: var(--font-body);
+   transition: all 0.15s;
+   text-align: center;
+ }
+ .msg-type-btn.active-normal  { background: rgba(232,255,71,0.15); color: var(--accent); border-color: var(--accent); }
+ .msg-type-btn.active-important { background: rgba(255,107,53,0.15); color: var(--accent2); border-color: var(--accent2); }
+ .msg-type-btn.active-urgent  { background: rgba(255,26,26,0.2); color: #ff4f6a; border-color: #ff4f6a; }
+
+ /* ===== TIME ADJUST BUTTONS ===== */
+ .time-adj-row {
+   display: flex;
+   gap: 6px;
+   justify-content: center;
+   margin-top: 10px;
+ }
+ .btn-time-adj {
+   background: var(--surface3);
+   border: 1px solid var(--border);
+   color: var(--text2);
+   border-radius: 6px;
+   padding: 5px 12px;
+   font-size: 12px;
+   font-family: var(--font-mono);
+   cursor: pointer;
+   font-weight: 600;
+   transition: all 0.15s;
+ }
+ .btn-time-adj:hover { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.08); }
+ .btn-time-adj.minus:hover { border-color: var(--red); color: var(--red); background: rgba(255,79,106,0.08); }
+
+ /* ===== NAV PREV/NEXT ===== */
+ .btn-nav-timer {
+   display: inline-flex; align-items: center; gap: 4px;
+   background: var(--surface2);
+   border: 1px solid var(--border);
+   color: var(--text2);
+   border-radius: 6px;
+   padding: 7px 14px;
+   font-size: 12px;
+   font-family: var(--font-body);
+   font-weight: 500;
+   cursor: pointer;
+   transition: all 0.15s;
+ }
+ .btn-nav-timer:hover:not(:disabled) { border-color: var(--accent3); color: var(--accent3); }
+ .btn-nav-timer:disabled { opacity: 0.3; cursor: not-allowed; }
+
+ /* ===== FLASH BUTTON ===== */
+ .btn-flash {
+   background: rgba(232,255,71,0.1);
+   border: 1px solid var(--accent);
+   color: var(--accent);
+   border-radius: 6px;
+   padding: 7px 14px;
+   font-size: 12px;
+   font-weight: 700;
+   font-family: var(--font-body);
+   cursor: pointer;
+   letter-spacing: 0.5px;
+   transition: all 0.15s;
+ }
+ .btn-flash:hover { background: rgba(232,255,71,0.2); box-shadow: 0 0 16px rgba(232,255,71,0.3); }
 </style>
 </head>
 <body>
@@ -1490,6 +1698,19 @@
 
 <!-- ===== STAGER VIEW ===== -->
 <div class="screen" id="screen-stager">
+ <!-- URGENT overlay (full screen message) -->
+ <div class="stager-urgent-overlay" id="stager-urgent-overlay">
+   <div class="stager-urgent-label">⚠ MENSAJE URGENTE ⚠</div>
+   <div class="stager-urgent-text" id="stager-urgent-text">—</div>
+   <div class="stager-urgent-timer" id="stager-urgent-timer-echo"></div>
+   <button class="stager-urgent-close" onclick="closeUrgentOverlay()">Entendido — cerrar</button>
+ </div>
+ <!-- IMPORTANT popup (universal, any screen size) -->
+ <div class="stager-important-popup" id="stager-important-popup">
+   <span class="imp-label">!</span>
+   <span id="stager-important-text" style="flex:1;overflow:hidden;text-overflow:ellipsis;"></span>
+   <div class="stager-important-popup-bar"></div>
+ </div>
  <!-- Message popup for landscape mobile -->
  <div class="stager-msg-popup" id="stager-msg-popup">
    <i data-lucide="message-square" style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0;"></i>
@@ -1566,12 +1787,18 @@
  </div>
  <div class="runner-timer-list" id="runner-timer-list"></div>
  <div class="msg-area">
- <div class="runner-sidebar-header" style="border:none;padding:0 0 8px 0;">Enviar Mensaje</div>
- <div class="msg-device-tabs" id="msg-device-tabs"></div>
- <div style="display:flex;gap:6px;">
- <input type="text" id="msg-input" class="form-input" placeholder="Escribe un mensaje..." style="flex:1;" onkeydown="if(event.key==='Enter')sendMessage()">
- <button class="btn btn-primary btn-sm btn-icon" onclick="sendMessage()" title="Enviar"><i data-lucide="send-horizontal"></i></button>
- </div>
+   <div class="runner-sidebar-header" style="border:none;padding:0 0 8px 0;">Enviar Mensaje</div>
+   <div class="msg-device-tabs" id="msg-device-tabs"></div>
+   <div class="msg-type-row">
+     <button class="msg-type-btn active-normal" id="msg-type-normal" onclick="selectMsgType('normal')">Normal</button>
+     <button class="msg-type-btn" id="msg-type-important" onclick="selectMsgType('important')">! Importante</button>
+     <button class="msg-type-btn" id="msg-type-urgent" onclick="selectMsgType('urgent')">⚠ Urgente</button>
+   </div>
+   <div style="display:flex;gap:6px;">
+     <input type="text" id="msg-input" class="form-input" placeholder="Escribe un mensaje..." style="flex:1;" onkeydown="if(event.key==='Enter')sendMessage()">
+     <button class="btn btn-primary btn-sm btn-icon" onclick="sendMessage()" title="Enviar"><i data-lucide="send-horizontal"></i></button>
+   </div>
+   <button class="btn-flash" style="margin-top:8px;width:100%;" onclick="sendFlash()">⚡ Flash Timer</button>
  </div>
  </div>
  </div>
@@ -1610,6 +1837,7 @@ let timerTotal = 0;
 let timerRunning = false;
 let timerPaused = false;
 let currentMsgDevice = null;
+let currentMsgType = 'normal';
 let realtimeChannel = null;
 let stagerChannel = null;
 
@@ -2312,21 +2540,32 @@ function renderOrgMain() {
  <div class="live-dot"></div>
  </div>
 
- <div class="runner-controls">
- <button class="btn btn-success" onclick="orgStart()" ${!t||orgRunning?'disabled':''}> Iniciar</button>
- <button class="btn btn-secondary" onclick="orgPause()" ${!orgRunning?'disabled':''}> Pausar</button>
- <button class="btn btn-ghost" onclick="orgReset()">↺ Reiniciar</button>
- ${orgActiveIdx < currentTimers.length-1 ? `<button class="btn btn-secondary" onclick="orgNext()">Siguiente →</button>` : ''}
- <button class="btn btn-ghost btn-sm" onclick="openAddTimer()">+ Timer</button>
+ <div class="runner-controls" style="gap:6px;">
+   <button class="btn-nav-timer" onclick="orgPrev()" ${orgActiveIdx <= 0 ? 'disabled' : ''} title="Timer anterior">
+     <i data-lucide="skip-back" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none;"></i> Anterior
+   </button>
+   <button class="btn btn-success" onclick="orgStart()" ${!t||orgRunning?'disabled':''}> Iniciar</button>
+   <button class="btn btn-secondary" onclick="orgPause()" ${!orgRunning?'disabled':''}> Pausar</button>
+   <button class="btn btn-ghost" onclick="orgReset()">↺</button>
+   <button class="btn-nav-timer" onclick="orgNext()" ${orgActiveIdx >= currentTimers.length - 1 ? 'disabled' : ''} title="Timer siguiente">
+     Siguiente <i data-lucide="skip-forward" style="width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none;"></i>
+   </button>
+   <button class="btn btn-ghost btn-sm" onclick="openAddTimer()">+ Timer</button>
  </div>
 
- <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:20px;text-align:center;">
+ <div id="org-timer-display" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:20px;text-align:center;">
  ${t ? `
  <div style="font-size:14px;color:var(--text2);margin-bottom:4px;">${esc(t.name)}</div>
  ${t.speaker?`<div style="font-size:12px;color:var(--text3);margin-bottom:16px;"> ${esc(t.speaker)}</div>`:'<div style="height:20px;"></div>'}
  <div style="font-family:var(--font-mono);font-size:clamp(48px,8vw,96px);font-weight:300;color:${orgRemaining<=60?'var(--red)':orgRemaining<=300?'var(--yellow)':'var(--accent)'};letter-spacing:-1px;">${remStr}</div>
  <div style="font-size:13px;color:var(--text3);margin-top:8px;">de ${dur} total</div>
- <div style="height:6px;background:var(--surface3);border-radius:3px;margin-top:20px;overflow:hidden;">
+ <div class="time-adj-row">
+   <button class="btn-time-adj minus" onclick="orgAdjustTime(-60)" title="-1 min">−1 min</button>
+   <button class="btn-time-adj minus" onclick="orgAdjustTime(-30)" title="-30 seg">−30s</button>
+   <button class="btn-time-adj" onclick="orgAdjustTime(30)" title="+30 seg">+30s</button>
+   <button class="btn-time-adj" onclick="orgAdjustTime(60)" title="+1 min">+1 min</button>
+ </div>
+ <div style="height:6px;background:var(--surface3);border-radius:3px;margin-top:16px;overflow:hidden;">
  <div style="height:100%;width:${pct}%;background:${orgRemaining<=60?'var(--red)':orgRemaining<=300?'var(--yellow)':'var(--green)'};border-radius:3px;transition:width 1s linear;"></div>
  </div>
  ${t.notes?`<div style="margin-top:16px;font-size:12px;color:var(--text3);background:var(--surface2);border-radius:6px;padding:8px 12px;"> ${esc(t.notes)}</div>`:''}
@@ -2432,6 +2671,20 @@ function orgNext() {
  }
 }
 
+function orgPrev() {
+ if (orgActiveIdx > 0) {
+ orgSelectTimer(orgActiveIdx - 1);
+ }
+}
+
+function orgAdjustTime(seconds) {
+ if (orgActiveIdx < 0) return;
+ orgRemaining = Math.max(0, orgRemaining + seconds);
+ renderOrgMain();
+ broadcastTimerState();
+ toast(`${seconds > 0 ? '+' : ''}${seconds}s al timer`, 'info');
+}
+
 function backFromOrganizador() {
  if (orgInterval) { clearInterval(orgInterval); orgInterval = null; }
  orgRunning = false; orgPaused = false; orgActiveIdx = -1;
@@ -2459,6 +2712,27 @@ async function broadcastTimerState() {
  }, { onConflict: 'session_id' });
 }
 
+function selectMsgType(type) {
+ currentMsgType = type;
+ ['normal','important','urgent'].forEach(t => {
+   const btn = document.getElementById(`msg-type-${t}`);
+   if (btn) { btn.className = `msg-type-btn ${t === type ? 'active-'+t : ''}`; }
+ });
+}
+
+async function sendFlash() {
+ if (!currentSession) return;
+ await sb.from('messages').insert({
+   session_id: currentSession.id,
+   device_target: currentMsgDevice || 'all',
+   content: '__FLASH__',
+   msg_type: 'flash',
+   from_role: 'organizador',
+   created_at: new Date().toISOString()
+ });
+ toast('Flash enviado ⚡', 'success');
+}
+
 async function sendMessage() {
  const input = document.getElementById('msg-input');
  const text = input.value.trim();
@@ -2467,11 +2741,13 @@ async function sendMessage() {
  session_id: currentSession.id,
  device_target: currentMsgDevice,
  content: text,
+ msg_type: currentMsgType || 'normal',
  from_role: 'organizador',
  created_at: new Date().toISOString()
  });
  input.value = '';
- toast('Mensaje enviado', 'success');
+ const typeLabel = currentMsgType === 'urgent' ? 'urgente' : currentMsgType === 'important' ? 'importante' : 'normal';
+ toast(`Mensaje ${typeLabel} enviado`, 'success');
 }
 
 function subscribeOrganizador() {
@@ -2552,29 +2828,88 @@ function subscribeStagerMessages() {
  const msg = payload.new;
  const devId = currentDevice ? currentDevice.id : 'generic';
  if (msg.device_target === 'all' || msg.device_target === devId) {
- addStagerMessage(msg.content);
+   const type = msg.msg_type || 'normal';
+   if (type === 'flash') {
+     triggerStagerFlash();
+   } else if (type === 'urgent') {
+     showUrgentOverlay(msg.content);
+   } else if (type === 'important') {
+     showImportantPopup(msg.content);
+     addStagerMessage(msg.content, 'important');
+   } else {
+     addStagerMessage(msg.content, 'normal');
+     // landscape popup for normal messages
+     const isLandscape = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
+     if (isLandscape) showStagerMsgPopup(msg.content);
+   }
  }
  })
  .subscribe();
 }
 
 let stagerPopupTimeout = null;
+let stagerImportantTimeout = null;
 
-function addStagerMessage(text) {
+function addStagerMessage(text, type) {
  const container = document.getElementById('stager-messages');
  // Remove placeholder
- if (container.querySelector('div[style]')) container.innerHTML = '';
+ const placeholder = container.querySelector('div[style]');
+ if (placeholder) container.innerHTML = '';
  const el = document.createElement('div');
  el.className = 'stager-message';
+ if (type === 'important') {
+   el.style.borderLeftColor = 'var(--accent2)';
+   el.style.background = 'rgba(255,107,53,0.12)';
+ }
  el.textContent = text;
  container.prepend(el);
  // Keep only last 5
  while (container.children.length > 5) container.removeChild(container.lastChild);
+}
 
- // Show popup if landscape + small screen (phone horizontal)
- const isLandscape = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
- if (isLandscape) {
-   showStagerMsgPopup(text);
+function showImportantPopup(text) {
+ const popup = document.getElementById('stager-important-popup');
+ const textEl = document.getElementById('stager-important-text');
+ if (!popup || !textEl) return;
+ popup.classList.remove('visible');
+ textEl.textContent = text;
+ void popup.offsetWidth;
+ popup.classList.add('visible');
+ if (stagerImportantTimeout) clearTimeout(stagerImportantTimeout);
+ stagerImportantTimeout = setTimeout(() => {
+   popup.classList.remove('visible');
+ }, 6000);
+}
+
+function showUrgentOverlay(text) {
+ document.getElementById('stager-urgent-text').textContent = text;
+ document.getElementById('stager-urgent-overlay').classList.add('active');
+ // Echo the current timer if available
+ const timerEcho = document.getElementById('stager-urgent-timer-echo');
+ const mainTimer = document.querySelector('.stager-time');
+ if (timerEcho && mainTimer) timerEcho.textContent = mainTimer.textContent;
+ // Auto-close after 15s
+ setTimeout(() => closeUrgentOverlay(), 15000);
+}
+
+function closeUrgentOverlay() {
+ document.getElementById('stager-urgent-overlay').classList.remove('active');
+}
+
+function triggerStagerFlash() {
+ const stagerScreen = document.getElementById('screen-stager');
+ const timerDisplay = document.querySelector('#stager-main .stager-time');
+ if (stagerScreen) {
+   stagerScreen.classList.remove('stager-flashing');
+   void stagerScreen.offsetWidth;
+   stagerScreen.classList.add('stager-flashing');
+   setTimeout(() => stagerScreen.classList.remove('stager-flashing'), 2500);
+ }
+ if (timerDisplay) {
+   timerDisplay.classList.remove('timer-flashing');
+   void timerDisplay.offsetWidth;
+   timerDisplay.classList.add('timer-flashing');
+   setTimeout(() => timerDisplay.classList.remove('timer-flashing'), 2500);
  }
 }
 
