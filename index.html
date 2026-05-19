@@ -2186,6 +2186,7 @@ function renderSessionDetail() {
  <h2 class="card-title">Timers (${currentTimers.length})</h2>
  <button class="btn btn-secondary btn-sm" onclick="openAddTimer()">+ Agregar Timer</button>
  </div>
+ ${(s.start_time && s.end_time) ? renderDurationSummary(s, currentTimers) : ''}
  <div class="timers-list" id="timers-list">
  ${currentTimers.length===0?`<div class="empty-state"><div class="empty-state-icon"><i data-lucide="timer-off"></i></div><div class="empty-state-text">No hay timers aún</div><div class="empty-state-sub">Agrega el primer timer para esta sesión</div></div>`:currentTimers.map((t,i)=>timerRowHTML(t,i)).join('')}
  </div>
@@ -2370,6 +2371,16 @@ function editSession(sessionId) {
  <label class="form-label">Fecha</label>
  <input type="date" id="edit-session-date" class="form-input" value="${s.event_date||''}">
  </div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+ <div class="form-group">
+   <label class="form-label">Hora de inicio</label>
+   <input type="time" id="edit-session-start-time" class="form-input" value="${s.start_time||''}" placeholder="19:00">
+ </div>
+ <div class="form-group">
+   <label class="form-label">Hora de fin</label>
+   <input type="time" id="edit-session-end-time" class="form-input" value="${s.end_time||''}" placeholder="21:00">
+ </div>
+ </div>
  <div class="modal-footer">
  <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
  <button class="btn btn-primary" onclick="saveEditSession('${sessionId}')">Guardar</button>
@@ -2381,10 +2392,16 @@ async function saveEditSession(id) {
  const name = document.getElementById('edit-session-name').value.trim();
  const desc = document.getElementById('edit-session-desc').value.trim();
  const date = document.getElementById('edit-session-date').value;
+ const startTime = document.getElementById('edit-session-start-time').value;
+ const endTime = document.getElementById('edit-session-end-time').value;
  if (!name) { toast('El nombre es requerido', 'error'); return; }
- const { error } = await sb.from('sessions').update({ name, description: desc, event_date: date||null }).eq('id', id);
+ const { error } = await sb.from('sessions').update({
+   name, description: desc, event_date: date||null,
+   start_time: startTime||null, end_time: endTime||null
+ }).eq('id', id);
  if (error) { toast('Error: '+error.message, 'error'); return; }
- currentSession.name = name; currentSession.description = desc; currentSession.event_date = date;
+ currentSession.name = name; currentSession.description = desc;
+ currentSession.event_date = date; currentSession.start_time = startTime; currentSession.end_time = endTime;
  closeModal();
  toast('Sesión actualizada', 'success');
  renderSessionDetail();
@@ -2590,16 +2607,6 @@ function renderOrgMain() {
  <div class="live-dot"></div>
  </div>
 
- <div class="meeting-duration-bar">
-   <span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);white-space:nowrap;">Duración reunión</span>
-   <div class="meeting-duration-inputs">
-     <input type="time" id="meeting-start-time" class="form-input" style="width:110px;" placeholder="Inicio" value="${window._meetingStart||''}" onchange="updateMeetingDuration()">
-     <span style="color:var(--text3);font-size:13px;">→</span>
-     <input type="time" id="meeting-end-time" class="form-input" style="width:110px;" placeholder="Fin" value="${window._meetingEnd||''}" onchange="updateMeetingDuration()">
-   </div>
-   <div class="meeting-duration-stat" id="meeting-duration-result">${getMeetingDurationHTML()}</div>
- </div>
-
  <div id="org-timer-display" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:0;text-align:center;">
  ${t ? `
  <div style="font-size:14px;color:var(--text2);margin-bottom:4px;">${esc(t.name)}</div>
@@ -2684,30 +2691,51 @@ function selectMsgDevice(id, el) {
 // ============================================================
 // MEETING DURATION HELPERS
 // ============================================================
-function getMeetingDurationHTML() {
- const s = window._meetingStart; const e = window._meetingEnd;
- if (!s || !e) return '<span>Establece inicio y fin para ver el balance</span>';
- const [sh,sm] = s.split(':').map(Number);
- const [eh,em] = e.split(':').map(Number);
- const windowSec = (eh*60+em - (sh*60+sm)) * 60;
- if (windowSec <= 0) return '<span style="color:var(--red);">La hora de fin debe ser posterior al inicio</span>';
- const timerTotal = currentTimers.reduce((acc,t)=>acc+(t.duration_seconds||0),0);
+function renderDurationSummary(session, timers) {
+ const s = session.start_time; const e = session.end_time;
+ if (!s || !e) return '';
+ const [sh, sm] = s.split(':').map(Number);
+ const [eh, em] = e.split(':').map(Number);
+ const windowSec = (eh * 60 + em - (sh * 60 + sm)) * 60;
+ if (windowSec <= 0) return '';
+ const timerTotal = timers.reduce((acc, t) => acc + (t.duration_seconds || 0), 0);
  const diff = windowSec - timerTotal;
- const diffStr = formatDuration(Math.abs(diff));
+ const absDiff = Math.abs(diff);
+ const over = diff < 0;
+ const exact = diff === 0;
+ const diffStr = formatDuration(absDiff);
  const windowStr = formatDuration(windowSec);
  const timerStr = formatDuration(timerTotal);
- if (diff >= 0) {
-   return `Ventana: <span>${windowStr}</span> · Timers: <span>${timerStr}</span> · <span class="meeting-duration-ok">Sobran ${diffStr}</span>`;
- } else {
-   return `Ventana: <span>${windowStr}</span> · Timers: <span>${timerStr}</span> · <span class="meeting-duration-over">Exceden por ${diffStr}</span>`;
- }
-}
-
-function updateMeetingDuration() {
- window._meetingStart = document.getElementById('meeting-start-time')?.value || '';
- window._meetingEnd = document.getElementById('meeting-end-time')?.value || '';
- const el = document.getElementById('meeting-duration-result');
- if (el) el.innerHTML = getMeetingDurationHTML();
+ const pct = Math.min(100, Math.round((timerTotal / windowSec) * 100));
+ const barColor = over ? 'var(--red)' : pct >= 90 ? 'var(--yellow)' : 'var(--green)';
+ const statusText = exact
+   ? `<span style="color:var(--green);font-weight:600;">Tiempo exacto ✓</span>`
+   : over
+     ? `<span style="color:var(--red);font-weight:600;">Excede por ${diffStr}</span>`
+     : `<span style="color:var(--green);font-weight:600;">Sobran ${diffStr}</span>`;
+ return `
+ <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;">
+   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
+     <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+       <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);">Duración planificada</div>
+       <div style="font-size:13px;color:var(--text2);">
+         <span style="font-family:var(--font-mono);color:var(--text);">${s}</span>
+         <span style="margin:0 6px;color:var(--text3);">→</span>
+         <span style="font-family:var(--font-mono);color:var(--text);">${e}</span>
+         <span style="margin-left:8px;color:var(--text3);">(${windowStr})</span>
+       </div>
+     </div>
+     <div style="font-size:13px;">${statusText}</div>
+   </div>
+   <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px;">
+     <div style="font-size:12px;color:var(--text3);">Timers: <span style="font-family:var(--font-mono);color:var(--text);">${timerStr}</span></div>
+     <div style="font-size:12px;color:var(--text3);">Ocupado: <span style="font-family:var(--font-mono);color:var(--text);">${pct}%</span></div>
+   </div>
+   <div style="height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;">
+     <div style="height:100%;width:${Math.min(pct,100)}%;background:${barColor};border-radius:3px;transition:width 0.4s;"></div>
+   </div>
+ </div>
+ `;
 }
 
 function orgSelectTimer(idx) {
