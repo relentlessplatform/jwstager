@@ -410,7 +410,7 @@
  background: var(--bg);
  }
 
- .page { display: none; padding: 32px; max-width: 1100px; }
+ .page { display: none; padding: 32px; max-width: 1100px; margin: 0 auto; width: 100%; }
  .page.active { display: block; }
 
  .page-header {
@@ -2129,6 +2129,16 @@ function openCreateSession() {
  <label class="form-label">Fecha del Evento</label>
  <input type="date" id="new-session-date" class="form-input">
  </div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+ <div class="form-group">
+   <label class="form-label">Hora de inicio</label>
+   ${timePickerHTML('new-session-start', '')}
+ </div>
+ <div class="form-group">
+   <label class="form-label">Hora de fin</label>
+   ${timePickerHTML('new-session-end', '')}
+ </div>
+ </div>
  <div class="modal-footer">
  <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
  <button class="btn btn-primary" onclick="createSession()">Crear Sesión</button>
@@ -2140,9 +2150,12 @@ async function createSession() {
  const name = document.getElementById('new-session-name').value.trim();
  const desc = document.getElementById('new-session-desc').value.trim();
  const date = document.getElementById('new-session-date').value;
+ const startTime = getTimeFromPicker('new-session-start');
+ const endTime = getTimeFromPicker('new-session-end');
  if (!name) { toast('Ingresa un nombre para la sesión', 'error'); return; }
  const { data, error } = await sb.from('sessions').insert({
- user_id: currentUser.id, name, description: desc, event_date: date || null, status: 'draft'
+ user_id: currentUser.id, name, description: desc, event_date: date || null,
+ start_time: startTime||null, end_time: endTime||null, status: 'draft'
  }).select().single();
  if (error) { toast('Error al crear sesión: ' + error.message, 'error'); return; }
  closeModal();
@@ -2374,11 +2387,11 @@ function editSession(sessionId) {
  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
  <div class="form-group">
    <label class="form-label">Hora de inicio</label>
-   <input type="time" id="edit-session-start-time" class="form-input" value="${s.start_time||''}" placeholder="19:00">
+   ${timePickerHTML('edit-session-start', s.start_time)}
  </div>
  <div class="form-group">
    <label class="form-label">Hora de fin</label>
-   <input type="time" id="edit-session-end-time" class="form-input" value="${s.end_time||''}" placeholder="21:00">
+   ${timePickerHTML('edit-session-end', s.end_time)}
  </div>
  </div>
  <div class="modal-footer">
@@ -2392,8 +2405,8 @@ async function saveEditSession(id) {
  const name = document.getElementById('edit-session-name').value.trim();
  const desc = document.getElementById('edit-session-desc').value.trim();
  const date = document.getElementById('edit-session-date').value;
- const startTime = document.getElementById('edit-session-start-time').value;
- const endTime = document.getElementById('edit-session-end-time').value;
+ const startTime = getTimeFromPicker('edit-session-start');
+ const endTime = getTimeFromPicker('edit-session-end');
  if (!name) { toast('El nombre es requerido', 'error'); return; }
  const { error } = await sb.from('sessions').update({
    name, description: desc, event_date: date||null,
@@ -2607,6 +2620,8 @@ function renderOrgMain() {
  <div class="live-dot"></div>
  </div>
 
+ ${(currentSession.start_time && currentSession.end_time) ? renderDurationSummary(currentSession, currentTimers) : ''}
+
  <div id="org-timer-display" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:0;text-align:center;">
  ${t ? `
  <div style="font-size:14px;color:var(--text2);margin-bottom:4px;">${esc(t.name)}</div>
@@ -2686,6 +2701,35 @@ function selectMsgDevice(id, el) {
  currentMsgDevice = id;
  document.querySelectorAll('.msg-device-tab').forEach(t=>t.classList.remove('active'));
  el.classList.add('active');
+}
+
+// ============================================================
+// TIME PICKER HELPERS (24h, HH:MM selects)
+// ============================================================
+function timePickerHTML(prefix, value) {
+ const [hStr, mStr] = (value || '').split(':');
+ const h = parseInt(hStr) || '';
+ const m = parseInt(mStr) || '';
+ const hours = Array.from({length:24},(_,i)=>i);
+ const mins = [0,5,10,15,20,25,30,35,40,45,50,55];
+ const hOpts = hours.map(i=>`<option value="${i}" ${i===h?'selected':''}>${String(i).padStart(2,'0')}</option>`).join('');
+ const mOpts = mins.map(i=>`<option value="${i}" ${i===m?'selected':''}>${String(i).padStart(2,'0')}</option>`).join('');
+ return `<div style="display:flex;gap:6px;align-items:center;">
+   <select id="${prefix}-h" class="form-input" style="width:72px;padding:11px 8px;">
+     <option value="" ${h===''?'selected':''}>HH</option>${hOpts}
+   </select>
+   <span style="color:var(--text3);font-size:18px;font-weight:300;">:</span>
+   <select id="${prefix}-m" class="form-input" style="width:72px;padding:11px 8px;">
+     <option value="" ${m===''?'selected':''}>MM</option>${mOpts}
+   </select>
+ </div>`;
+}
+
+function getTimeFromPicker(prefix) {
+ const h = document.getElementById(`${prefix}-h`)?.value;
+ const m = document.getElementById(`${prefix}-m`)?.value;
+ if (h === '' || m === '') return null;
+ return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
 // ============================================================
