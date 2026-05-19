@@ -6,6 +6,7 @@
 <title>JW Stager — Control de Escenario</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
  :root {
@@ -1441,7 +1442,52 @@
  }
  .stager-flashing { animation: stagerFlash 0.35s ease 6 !important; }
 
- /* ===== MSG TYPE SELECTOR ===== */
+ /* ===== SHARE CONTEXT MENU ===== */
+ .share-menu-wrapper { position: relative; display: inline-block; }
+ .share-menu {
+   position: absolute;
+   top: calc(100% + 8px);
+   right: 0;
+   background: var(--surface2);
+   border: 1px solid var(--border);
+   border-radius: var(--radius);
+   padding: 6px;
+   min-width: 200px;
+   z-index: 200;
+   box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+   animation: scaleIn 0.15s ease both;
+   transform-origin: top right;
+   display: none;
+ }
+ .share-menu.open { display: block; }
+ .share-menu-item {
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   padding: 10px 12px;
+   border-radius: var(--radius-sm);
+   font-size: 13px;
+   font-weight: 500;
+   cursor: pointer;
+   color: var(--text);
+   transition: background 0.15s;
+   border: none;
+   background: none;
+   width: 100%;
+   text-align: left;
+   font-family: var(--font-body);
+ }
+ .share-menu-item:hover { background: var(--surface3); }
+ .share-menu-item svg { width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0;color:var(--text2); }
+
+ /* ===== QR MODAL ===== */
+ .qr-container {
+   background: #fff;
+   border-radius: 12px;
+   padding: 20px;
+   display: inline-block;
+   margin: 16px auto;
+ }
  .msg-type-row {
    display: flex;
    gap: 4px;
@@ -1886,14 +1932,48 @@ let stagerChannel = null;
 async function init() {
  const { data: { session } } = await sb.auth.getSession();
  hideLoading();
+
+ // Handle invite link: ?join=SESSION_ID
+ const params = new URLSearchParams(window.location.search);
+ const joinId = params.get('join');
+ if (joinId) {
+   // Load the session publicly
+   const { data: sess } = await sb.from('sessions').select('*').eq('id', joinId).single();
+   if (sess) {
+     currentSession = sess;
+     const { data: timers } = await sb.from('timers').select('*').eq('session_id', joinId).order('order_index');
+     currentTimers = timers || [];
+     if (session) {
+       // Logged-in user: load their data then go straight to role select
+       currentUser = session.user;
+       await loadUserData();
+       showScreen('screen-role-select');
+       document.getElementById('role-session-name-display').textContent = sess.name;
+     } else {
+       // Guest: go directly to stager view without login
+       showScreen('screen-stager');
+       document.getElementById('stager-session-name').textContent = sess.name;
+       document.getElementById('stager-device-display').textContent = 'INVITADO';
+       stagerCurrentTimerId = null;
+       if (stagerPollInterval) clearInterval(stagerPollInterval);
+       await updateStagerView();
+       stagerPollInterval = setInterval(updateStagerView, 1000);
+       subscribeStagerMessages();
+     }
+     // Clean URL without reload
+     window.history.replaceState({}, '', window.location.pathname);
+     return;
+   }
+ }
+
  if (session) {
- currentUser = session.user;
- await loadUserData();
- showScreen('screen-app');
- showPage('page-dashboard');
- await loadDashboard();
+   currentUser = session.user;
+   await loadUserData();
+   showScreen('screen-app');
+   showPage('page-dashboard');
+   await loadDashboard();
  } else {
- showScreen('screen-landing');
+   showScreen('screen-landing');
  }
 }
 
@@ -2190,6 +2270,22 @@ function renderSessionDetail() {
  <p class="page-sub">${esc(s.description||'')}</p>
  </div>
  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0;">
+ <div class="share-menu-wrapper" id="share-menu-wrapper">
+   <button class="btn btn-secondary" onclick="toggleShareMenu(event)" title="Compartir sesión">
+     <svg style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;vertical-align:middle;" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+     Compartir
+   </button>
+   <div class="share-menu" id="share-menu">
+     <button class="share-menu-item" onclick="shareLink('${s.id}')">
+       <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+       Copiar link de invitación
+     </button>
+     <button class="share-menu-item" onclick="shareQR('${s.id}')">
+       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="3" y="3" width="7" height="7" fill="none"/><path d="M14 14h3v3h-3zM17 17h3v3h-3zM14 20h3"/></svg>
+       Generar código QR
+     </button>
+   </div>
+ </div>
  <button class="btn btn-secondary" onclick="editSession('${s.id}')"><i data-lucide="pencil" style="width:14px;height:14px;"></i> Editar</button>
  <button class="btn btn-primary" onclick="openRoleSelect('${s.id}')"> Entrar a Sesión</button>
  <button class="btn btn-danger btn-sm btn-icon" onclick="deleteSession('${s.id}')" title="Eliminar sesión"><i data-lucide="trash-2"></i></button>
@@ -2426,6 +2522,81 @@ async function deleteSession(sessionId) {
  await sb.from('sessions').delete().eq('id', sessionId);
  toast('Sesión eliminada', 'success');
  showPage('page-sessions');
+}
+
+// ============================================================
+// SHARE
+// ============================================================
+function getInviteLink(sessionId) {
+ return `${window.location.origin}${window.location.pathname}?join=${sessionId}`;
+}
+
+function toggleShareMenu(e) {
+ e.stopPropagation();
+ const menu = document.getElementById('share-menu');
+ menu.classList.toggle('open');
+}
+
+function closeShareMenu() {
+ const menu = document.getElementById('share-menu');
+ if (menu) menu.classList.remove('open');
+}
+
+document.addEventListener('click', closeShareMenu);
+
+async function shareLink(sessionId) {
+ closeShareMenu();
+ const link = getInviteLink(sessionId);
+ try {
+   await navigator.clipboard.writeText(link);
+   toast('Link copiado al portapapeles', 'success');
+ } catch {
+   // Fallback: show in a modal the user can copy manually
+   showModal(`
+     <div class="modal-title">Link de invitación</div>
+     <p style="color:var(--text2);font-size:13px;margin-bottom:12px;">Copia este link y envíalo. Al abrirlo, el dispositivo entrará directo como Stager.</p>
+     <input type="text" class="form-input" value="${link}" id="invite-link-input" onclick="this.select()" readonly style="font-size:12px;font-family:var(--font-mono);">
+     <div class="modal-footer">
+       <button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>
+       <button class="btn btn-primary" onclick="document.getElementById('invite-link-input').select();document.execCommand('copy');toast('Link copiado','success');">Copiar</button>
+     </div>
+   `);
+ }
+}
+
+async function shareQR(sessionId) {
+ closeShareMenu();
+ const link = getInviteLink(sessionId);
+ showModal(`
+   <div class="modal-title">Código QR de invitación</div>
+   <p style="color:var(--text2);font-size:13px;margin-bottom:4px;">Escanea este código para entrar a la sesión como Stager.</p>
+   <div style="text-align:center;">
+     <div class="qr-container">
+       <canvas id="qr-canvas"></canvas>
+     </div>
+     <div style="font-size:11px;color:var(--text3);margin-top:8px;font-family:var(--font-mono);word-break:break-all;">${link}</div>
+   </div>
+   <div class="modal-footer">
+     <button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>
+     <button class="btn btn-secondary" onclick="downloadQR()">Descargar QR</button>
+   </div>
+ `);
+ // Generate QR after modal renders
+ setTimeout(() => {
+   const canvas = document.getElementById('qr-canvas');
+   if (canvas && window.QRCode) {
+     QRCode.toCanvas(canvas, link, { width: 240, margin: 2, color: { dark: '#000000', light: '#ffffff' } });
+   }
+ }, 50);
+}
+
+function downloadQR() {
+ const canvas = document.getElementById('qr-canvas');
+ if (!canvas) return;
+ const a = document.createElement('a');
+ a.download = `qr-sesion-${currentSession?.id || 'invite'}.png`;
+ a.href = canvas.toDataURL('image/png');
+ a.click();
 }
 
 // ============================================================
