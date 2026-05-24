@@ -2062,24 +2062,13 @@ async function doRegister() {
  btn.disabled = false;
  document.getElementById('register-btn-text').textContent = 'Crear Cuenta';
  if (error) { showError(errEl, error.message); return; }
- btn.disabled = false;
- document.getElementById('register-btn-text').textContent = 'Crear Cuenta';
- // Show email verification notice
- document.getElementById('form-register').innerHTML = `
-   <div style="text-align:center;padding:20px 0;">
-     <div style="font-size:48px;margin-bottom:16px;">📬</div>
-     <div style="font-size:18px;font-weight:700;margin-bottom:10px;">¡Revisa tu correo!</div>
-     <div style="color:var(--text2);font-size:14px;line-height:1.6;margin-bottom:20px;">
-       Te enviamos un enlace de verificación a<br>
-       <strong style="color:var(--text);">${email}</strong><br><br>
-       Haz clic en el enlace del correo para activar tu cuenta. Puede que tarde uno o dos minutos.
-     </div>
-     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--text3);">
-       ¿No lo encuentras? Revisa la carpeta de spam o correo no deseado.
-     </div>
-   </div>
- `;
- return;
+currentUser = data.user;
+await loadUserData();
+closeModal?.();
+showScreen('screen-app');
+showPage('page-dashboard');
+await loadDashboard();
+toast('¡Bienvenido a JW Stager!', 'success');
 }
 
 async function doLogout() {
