@@ -2062,13 +2062,12 @@ async function doRegister() {
  btn.disabled = false;
  document.getElementById('register-btn-text').textContent = 'Crear Cuenta';
  if (error) { showError(errEl, error.message); return; }
-currentUser = data.user;
-await loadUserData();
-closeModal?.();
-showScreen('screen-app');
-showPage('page-dashboard');
-await loadDashboard();
-toast('¡Bienvenido a JW Stager!', 'success');
+ currentUser = data.user;
+ await loadUserData();
+ showScreen('screen-app');
+ showPage('page-dashboard');
+ await loadDashboard();
+ toast('¡Bienvenido a JW Stager!', 'success');
 }
 
 async function doLogout() {
