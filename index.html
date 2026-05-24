@@ -2335,47 +2335,55 @@ async function openSession(sessionId) {
 function renderSessionDetail() {
  const s = currentSession;
  const date = s.event_date ? new Date(s.event_date).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : 'Sin fecha';
+ const statusBadge = `<span class="badge ${s.status==='live'?'badge-green':s.status==='draft'?'badge-gray':'badge-blue'}">${s.status==='live'?'EN VIVO':s.status==='draft'?'Borrador':'Finalizada'}</span>`;
  const body = document.getElementById('session-detail-body');
  body.innerHTML = `
- <div class="page-header">
- <div style="flex:1;min-width:0;">
- <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
- <button class="btn btn-ghost btn-sm" onclick="showPage('page-sessions')">← Sesiones</button>
- <span class="badge badge-gray">${esc(date)}</span>
- <span class="badge ${s.status==='live'?'badge-green':s.status==='draft'?'badge-gray':'badge-blue'}">${s.status==='live'?'EN VIVO':s.status==='draft'?'Borrador':'Finalizada'}</span>
+ <!-- Back row -->
+ <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+   <button class="btn btn-ghost btn-sm" onclick="showPage('page-sessions')">← Sesiones</button>
+   <span class="badge badge-gray" style="font-size:10px;">${esc(date)}</span>
+   ${statusBadge}
  </div>
- <h1 class="page-title">${esc(s.name)}</h1>
- <p class="page-sub">${esc(s.description||'')}</p>
- </div>
- <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex-shrink:0;">
- <div class="share-menu-wrapper" id="share-menu-wrapper">
-   <button class="btn btn-secondary" onclick="toggleShareMenu(event)" title="Compartir sesión">
-     <svg style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;vertical-align:middle;" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-     Compartir
-   </button>
-   <div class="share-menu" id="share-menu">
-     <button class="share-menu-item" onclick="shareLink('${s.id}')">
-       <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-       Copiar link de invitación
+
+ <!-- Title + description -->
+ <h1 class="page-title" style="font-size:clamp(28px,6vw,48px);margin-bottom:6px;">${esc(s.name)}</h1>
+ ${s.description ? `<p class="page-sub" style="margin-bottom:16px;word-break:break-word;">${esc(s.description)}</p>` : '<div style="height:8px;"></div>'}
+
+ <!-- Action buttons row -->
+ <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:24px;">
+   <button class="btn btn-primary" onclick="openRoleSelect('${s.id}')" style="flex:1;min-width:140px;justify-content:center;">▶ Entrar a Sesión</button>
+   <div class="share-menu-wrapper" id="share-menu-wrapper">
+     <button class="btn btn-secondary" onclick="toggleShareMenu(event)">
+       <svg style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+       Compartir
      </button>
-     <button class="share-menu-item" onclick="shareQR('${s.id}')">
-       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="3" y="3" width="7" height="7" fill="none"/><path d="M14 14h3v3h-3zM17 17h3v3h-3zM14 20h3"/></svg>
-       Generar código QR
-     </button>
+     <div class="share-menu" id="share-menu">
+       <button class="share-menu-item" onclick="shareLink('${s.id}')">
+         <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+         Copiar link de invitación
+       </button>
+       <button class="share-menu-item" onclick="shareQR('${s.id}')">
+         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3zM14 20h3"/></svg>
+         Generar código QR
+       </button>
+     </div>
    </div>
+   <button class="btn btn-secondary" onclick="editSession('${s.id}')"><i data-lucide="pencil" style="width:14px;height:14px;"></i> Editar</button>
+   <button class="btn btn-danger btn-sm btn-icon" onclick="deleteSession('${s.id}')" title="Eliminar sesión"><i data-lucide="trash-2"></i></button>
  </div>
- <button class="btn btn-secondary" onclick="editSession('${s.id}')"><i data-lucide="pencil" style="width:14px;height:14px;"></i> Editar</button>
- <button class="btn btn-primary" onclick="openRoleSelect('${s.id}')"> Entrar a Sesión</button>
- <button class="btn btn-danger btn-sm btn-icon" onclick="deleteSession('${s.id}')" title="Eliminar sesión"><i data-lucide="trash-2"></i></button>
- </div>
- </div>
+
+ <!-- Timers header -->
  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
- <h2 class="card-title">Timers (${currentTimers.length})</h2>
- <button class="btn btn-secondary btn-sm" onclick="openAddTimer()">+ Agregar Timer</button>
+   <h2 class="card-title" style="margin-bottom:0;">Timers (${currentTimers.length})</h2>
+   <button class="btn btn-secondary btn-sm" onclick="openAddTimer()">+ Agregar Timer</button>
  </div>
+
  ${(s.start_time && s.end_time) ? renderDurationSummary(s, currentTimers) : ''}
+
  <div class="timers-list" id="timers-list">
- ${currentTimers.length===0?`<div class="empty-state"><div class="empty-state-icon"><i data-lucide="timer-off"></i></div><div class="empty-state-text">No hay timers aún</div><div class="empty-state-sub">Agrega el primer timer para esta sesión</div></div>`:currentTimers.map((t,i)=>timerRowHTML(t,i)).join('')}
+   ${currentTimers.length===0
+     ? `<div class="empty-state"><div class="empty-state-icon"><i data-lucide="timer-off"></i></div><div class="empty-state-text">No hay timers aún</div><div class="empty-state-sub">Agrega el primer timer para esta sesión</div></div>`
+     : currentTimers.map((t,i) => timerRowHTML(t,i)).join('')}
  </div>
  `;
  refreshIcons(body);
@@ -2389,13 +2397,13 @@ function timerRowHTML(t, i) {
  <div class="timer-row" id="timer-row-${t.id}">
  <div class="timer-color-bar" style="background:${color};min-height:48px;"></div>
  <div class="timer-order">${i+1}</div>
- <div class="timer-info">
- <div class="timer-name">${esc(t.name)}</div>
+ <div class="timer-info" style="min-width:0;">
+ <div class="timer-name" style="word-break:break-word;">${esc(t.name)}</div>
  <div class="timer-speaker">${esc(t.speaker||'')}</div>
  ${t.notes?`<div style="font-size:11px;color:var(--text3);margin-top:2px;">${esc(t.notes)}</div>`:''}
  </div>
- <div class="timer-duration">${dur}</div>
- <div class="timer-actions">
+ <div class="timer-duration" style="font-size:clamp(16px,4vw,24px);white-space:nowrap;">${dur}</div>
+ <div class="timer-actions" style="flex-shrink:0;">
  <button class="btn btn-ghost btn-icon btn-sm" onclick="editTimer('${t.id}')" title="Editar"><i data-lucide="pencil"></i></button>
  <button class="btn btn-danger btn-icon btn-sm" onclick="deleteTimer('${t.id}')" title="Eliminar"><i data-lucide="trash-2"></i></button>
  </div>
