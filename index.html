@@ -1150,15 +1150,6 @@
  }
 
  /* ===== RESPONSIVE ===== */
- @media (max-width: 768px) {
- .sidebar { display: none; }
- .runner-layout { grid-template-columns: 1fr; }
- .runner-sidebar { display: none; }
- .role-select-grid { grid-template-columns: 1fr; }
- .stager-bottom { grid-template-columns: 1fr; }
- .page { padding: 16px; }
- }
-
  /* ===== SCROLL AREA ===== */
  .scroll-area { overflow-y: auto; }
 
@@ -1567,6 +1558,64 @@
    transition: all 0.15s;
  }
  .btn-flash:hover { background: rgba(232,255,71,0.2); box-shadow: 0 0 16px rgba(232,255,71,0.3); }
+
+ /* ===== MOBILE BOTTOM NAVBAR ===== */
+ .mobile-navbar {
+   display: none;
+   position: fixed;
+   bottom: 0; left: 0; right: 0;
+   height: 64px;
+   background: var(--surface);
+   border-top: 1px solid var(--border);
+   z-index: 500;
+   padding: 0 8px;
+   padding-bottom: env(safe-area-inset-bottom);
+ }
+ .mobile-navbar-inner {
+   display: flex;
+   align-items: stretch;
+   height: 100%;
+ }
+ .mobile-nav-item {
+   flex: 1;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   gap: 4px;
+   border: none;
+   background: none;
+   color: var(--text3);
+   font-family: var(--font-body);
+   font-size: 10px;
+   font-weight: 500;
+   cursor: pointer;
+   transition: all 0.15s;
+   padding: 6px 4px;
+   border-radius: 8px;
+   letter-spacing: 0.2px;
+ }
+ .mobile-nav-item svg {
+   width: 22px; height: 22px;
+   stroke: currentColor;
+   stroke-width: 1.75;
+   fill: none;
+   transition: all 0.15s;
+ }
+ .mobile-nav-item.active { color: var(--accent); }
+ .mobile-nav-item.active svg { filter: drop-shadow(0 0 6px rgba(232,255,71,0.5)); }
+ .mobile-nav-item:hover { color: var(--text); }
+
+ @media (max-width: 768px) {
+   .sidebar { display: none; }
+   .runner-layout { grid-template-columns: 1fr; }
+   .runner-sidebar { display: none; }
+   .role-select-grid { grid-template-columns: 1fr; }
+   .stager-bottom { grid-template-columns: 1fr; }
+   .page { padding: 16px; padding-bottom: 80px; }
+   .mobile-navbar { display: flex; }
+   .main-content { padding-bottom: 64px; }
+ }
 </style>
 </head>
 <body>
@@ -1589,9 +1638,9 @@
 <div class="screen active" id="screen-landing">
  <div class="landing-grid"></div>
  <div class="landing-content">
- <div class="logo-mark">JW</div>
+ <div class="logo-mark">JS</div>
  <h1 class="landing-title">JW<br>STAGER</h1>
- <p class="landing-sub">Control de tiempo para asignaciones y presentación en las reuniones!</p>
+ <p class="landing-sub">Control de escenario en tiempo real.<br>Para organizadores y presentadores.</p>
  <div class="landing-btns">
  <button class="btn btn-primary btn-lg" onclick="showAuth('login')">Iniciar Sesión</button>
  <button class="btn btn-ghost btn-lg" onclick="showAuth('register')">Crear Cuenta</button>
@@ -1658,7 +1707,7 @@
  <!-- Sidebar -->
  <aside class="sidebar">
  <div class="sidebar-header">
- <div class="sidebar-logo-mark">JW</div>
+ <div class="sidebar-logo-mark">JS</div>
  <span class="sidebar-logo-text">JW STAGER</span>
  </div>
  <nav class="sidebar-nav">
@@ -1779,6 +1828,28 @@
  </div>
 
  </div>
+
+ <!-- MOBILE BOTTOM NAVBAR -->
+ <nav class="mobile-navbar" id="mobile-navbar">
+   <div class="mobile-navbar-inner">
+     <button class="mobile-nav-item active" id="mnav-dashboard" onclick="showPage('page-dashboard');setMobileNav('mnav-dashboard')">
+       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+       Dashboard
+     </button>
+     <button class="mobile-nav-item" id="mnav-sessions" onclick="showPage('page-sessions');setMobileNav('mnav-sessions')">
+       <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+       Sesiones
+     </button>
+     <button class="mobile-nav-item" id="mnav-devices" onclick="showPage('page-devices');setMobileNav('mnav-devices')">
+       <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18" stroke-linecap="round" stroke-width="2"/></svg>
+       Dispositivos
+     </button>
+     <button class="mobile-nav-item" id="mnav-account" onclick="showPage('page-account');setMobileNav('mnav-account')">
+       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+       Mi Cuenta
+     </button>
+   </div>
+ </nav>
 </div>
 
 <!-- ===== STAGER VIEW ===== -->
@@ -2000,10 +2071,17 @@ function showPage(id) {
  const items = document.querySelectorAll('.nav-item');
  if (map[id] !== undefined && items[map[id]]) items[map[id]].classList.add('active');
  
- if (id === 'page-sessions') loadSessionsList();
- if (id === 'page-devices') loadDevicesList();
- if (id === 'page-account') loadAccountPage();
- if (id === 'page-dashboard') loadDashboard();
+ if (id === 'page-sessions') { loadSessionsList(); setMobileNav('mnav-sessions'); }
+ if (id === 'page-devices') { loadDevicesList(); setMobileNav('mnav-devices'); }
+ if (id === 'page-account') { loadAccountPage(); setMobileNav('mnav-account'); }
+ if (id === 'page-dashboard') { loadDashboard(); setMobileNav('mnav-dashboard'); }
+ if (id === 'page-session-detail') { setMobileNav('mnav-sessions'); }
+}
+
+function setMobileNav(activeId) {
+ document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
+ const el = document.getElementById(activeId);
+ if (el) el.classList.add('active');
 }
 
 function hideLoading() {
@@ -2067,7 +2145,10 @@ async function doRegister() {
  // Force a sign-in to get a valid session right away.
  if (!data.session) {
    const { data: signInData, error: signInError } = await sb.auth.signInWithPassword({ email, password });
-   if (signInError) { showError(errEl, 'Cuenta creada pero no se pudo iniciar sesión: ' + signInError.message); return; }
+   if (signInError) {
+     showError(errEl, '¡Cuenta creada! Pero necesitas verificar tu email antes de iniciar sesión. Revisa tu bandeja de entrada.');
+     return;
+   }
    currentUser = signInData.user;
  } else {
    currentUser = data.user;
