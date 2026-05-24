@@ -2062,7 +2062,17 @@ async function doRegister() {
  btn.disabled = false;
  document.getElementById('register-btn-text').textContent = 'Crear Cuenta';
  if (error) { showError(errEl, error.message); return; }
- currentUser = data.user;
+
+ // If Supabase requires confirmation, data.session will be null.
+ // Force a sign-in to get a valid session right away.
+ if (!data.session) {
+   const { data: signInData, error: signInError } = await sb.auth.signInWithPassword({ email, password });
+   if (signInError) { showError(errEl, 'Cuenta creada pero no se pudo iniciar sesión: ' + signInError.message); return; }
+   currentUser = signInData.user;
+ } else {
+   currentUser = data.user;
+ }
+
  await loadUserData();
  showScreen('screen-app');
  showPage('page-dashboard');
